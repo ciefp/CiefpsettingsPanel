@@ -71,7 +71,7 @@ PLUGINS = {
     "Starts Enigma2 normally": "init 3",
     "stop enigma2": "init 4",
     "stop enigma2": "init 5",
-    "Reboots Enigma2": "nit 6",
+    "Reboots Enigma2": "init 6",
     "Deep Standby": "init 0",
 }
 
