@@ -5,9 +5,16 @@ from Components.Label import Label
 from Components.MenuList import MenuList
 from Components.Button import Button
 from enigma import eConsoleAppContainer
+import urllib.request
+import json
 
-PLUGIN_VERSION = "1.2"  # Verzija plugina
-PLUGIN_NAME = "CiefpsettingsPanel"
+# Verzija plugina
+PLUGIN_VERSION = "1.3"
+
+# GitHub API za proveru najnovije verzije
+GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
+
+# Komande za instalaciju raznih plugina
 PLUGINS = {
     "CiefpSettingsDownloader": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSettingsDownloader/main/installer.sh -O - | /bin/sh",
     "CiefpsettingsMotor": "wget https://raw.githubusercontent.com/ciefp/CiefpsettingsMotor/main/installer.sh -O - | /bin/sh",
@@ -53,7 +60,7 @@ PLUGINS = {
     "FooTOnSat New": "wget --no-check-certificate https://raw.githubusercontent.com/MOHAMED19OS/Enigma2_Store/main/FootOnsat/installer.py -qO - | python",
     "FreeServerCCcam": "wget https://ia803104.us.archive.org/0/items/freecccamserver/installer.sh -qO - | /bin/sh",
     "feeds-finder": "wget -q --no-check-certificate https://dreambox4u.com/emilnabil237/plugins/feeds-finder/installer.sh -O - | /bin/sh",
-    "ShootYourScreen-Py3": "wget -q "--no-check-certificate" https://raw.githubusercontent.com/emil237/ShootYourScreen-Py3/main/ShootYourScreen-py3.sh -O - | /bin/sh",
+    "ShootYourScreen-Py3": "wget -q --no-check-certificate https://raw.githubusercontent.com/emil237/ShootYourScreen-Py3/main/ShootYourScreen-py3.sh -O - | /bin/sh",
     "update": "opkg update",
     "astra-sm": "opkg install astra-sm",
     "reboot": "reboot",
@@ -89,7 +96,6 @@ class CiefpsettingsPanel(Screen):
 
         self["menu"] = MenuList(list(PLUGINS.keys()))
         self["status"] = Label("Select a plugin to install")
-        # Pojedinačni widgeti sa bojama pozadine
         self["key_red"] = Button("Red: Exit")
         self["key_green"] = Button("Green/OK: Install")
         self["key_blue"] = Button("Blue: Restart Enigma2")
@@ -97,16 +103,31 @@ class CiefpsettingsPanel(Screen):
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
             {
-                "red": self.close,  # Crveno dugme - Zatvaranje panela
-                "green": self.install_plugin,  # Zeleno dugme - Instalacija odabranog plugina
-                "ok": self.install_plugin,  # OK dugme - Isto kao Zeleno dugme (Instalacija)
-                "blue": self.restart_enigma2,  # Plavo dugme - Restartovanje Enigma2
-                "cancel": self.close,  # Cancel dugme - Zatvaranje panela
+                "red": self.close,
+                "green": self.install_plugin,
+                "ok": self.install_plugin,
+                "blue": self.restart_enigma2,
+                "cancel": self.close,
             },
         )
 
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
+
+        # Provera nove verzije pri otvaranju
+        self.check_for_update()
+
+    def check_for_update(self):
+        try:
+            response = urllib.request.urlopen(GITHUB_API_URL)
+            data = json.load(response)
+            latest_version = data["tag_name"].lstrip("v")  # Pretpostavka: verzije koriste 'v' prefix
+            if latest_version > PLUGIN_VERSION:
+                self["status"].setText(f"New version available: {latest_version}. Please update!")
+            else:
+                self["status"].setText("You are using the latest version.")
+        except Exception as e:
+            self["status"].setText(f"Error checking for updates: {e}")
 
     def install_plugin(self):
         selected = self["menu"].getCurrent()
@@ -127,7 +148,7 @@ def Plugins(**kwargs):
     return [
         PluginDescriptor(
             name="Ciefpsettings Panel",
-            description=f"Manage and install plugins(Version {PLUGIN_VERSION})",
+            description=f"Manage and install plugins (Version {PLUGIN_VERSION})",
             where=PluginDescriptor.WHERE_PLUGINMENU,
             icon="icon.png",
             fnc=lambda session, **kwargs: session.open(CiefpsettingsPanel),
