@@ -9,7 +9,7 @@ import urllib.request
 import json
 
 # Verzija plugina
-PLUGIN_VERSION = "1.3"
+PLUGIN_VERSION = "v1.3"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
