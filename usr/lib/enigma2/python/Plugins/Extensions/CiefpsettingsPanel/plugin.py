@@ -9,7 +9,7 @@ import urllib.request
 import json
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.3"
+PLUGIN_VERSION = "v1.4"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -79,6 +79,9 @@ PLUGINS = {
     "Deep Standby": "init 0",
 }
 
+# Komanda za ažuriranje plugina
+UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/installer.sh -O - | /bin/sh"
+
 class CiefpsettingsPanel(Screen):
     skin = """
     <screen name="CiefpsettingsPanel" position="center,center" size="900,600" title="Ciefpsettings Panel">
@@ -124,10 +127,22 @@ class CiefpsettingsPanel(Screen):
             latest_version = data["tag_name"].lstrip("v")  # Pretpostavka: verzije koriste 'v' prefix
             if latest_version > PLUGIN_VERSION:
                 self["status"].setText(f"New version available: {latest_version}. Please update!")
+                self.session.openWithCallback(
+                    self.prompt_update,
+                    MessageBox,
+                    f"New version {latest_version} is available. Would you like to install it?",
+                    type=MessageBox.TYPE_YESNO,
+                )
             else:
                 self["status"].setText("You are using the latest version.")
         except Exception as e:
             self["status"].setText(f"Error checking for updates: {e}")
+
+    def prompt_update(self, answer):
+        if answer:
+            # Preuzimanje i instalacija nove verzije
+            self["status"].setText("Downloading and installing update...")
+            self.container.execute(UPDATE_COMMAND)
 
     def install_plugin(self):
         selected = self["menu"].getCurrent()
