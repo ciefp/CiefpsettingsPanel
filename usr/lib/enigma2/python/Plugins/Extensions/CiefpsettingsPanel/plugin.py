@@ -4,12 +4,14 @@ from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 from Components.Button import Button
+from Components.Pixmap import Pixmap
 from enigma import eConsoleAppContainer
 import urllib.request
 import json
+import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.4"
+PLUGIN_VERSION = "v1.5"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -85,12 +87,25 @@ UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.c
 class CiefpsettingsPanel(Screen):
     skin = """
     <screen name="CiefpsettingsPanel" position="center,center" size="900,600" title="Ciefpsettings Panel">
-        <widget name="menu" position="10,10" size="880,500" scrollbarMode="showOnDemand" font="Regular;24" />
-        <widget name="status" position="10,520" size="880,30" font="Regular;22" halign="center" />
-        <widget name="key_red" position="10,560" size="200,40" font="Regular;18" halign="center" backgroundColor="#9F1313" />
-        <widget name="key_green" position="350,560" size="200,40" font="Regular;18" halign="center" backgroundColor="#1F771F" />
-        <widget name="key_blue" position="690,560" size="200,40" font="Regular;18" halign="center" backgroundColor="#13389F" />
-    </screen>
+        <!-- Levih 50% ekrana za meni -->
+        <widget name="menu" position="10,10" size="450,500" scrollbarMode="showOnDemand" font="Regular;24" />
+
+        <!-- Desnih 50% ekrana za pozadinsku sliku i dugmadi -->
+        <widget name="background" position="460,0" size="450,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+        
+        <!-- Status na dnu levog dela -->
+        <widget name="status" position="10,520" size="450,30" transparent="1" font="Regular;22" halign="center" />
+        
+       <!-- Dugme za crvenu boju na desnoj strani -->
+       <widget name="key_red" position="460,520" size="450,40" font="Regular;18" halign="center" backgroundColor="#9F1313" />
+       
+       <!-- Dugme za zelenu boju na desnoj strani -->
+       <widget name="key_green" position="460,560" size="450,40" font="Regular;18" halign="center" backgroundColor="#1F771F" />
+    
+       <!-- Dugme za plavu boju na desnoj strani -->
+       <widget name="key_blue" position="460,600" size="450,40" font="Regular;18" halign="center" backgroundColor="#13389F" />
+</screen>
+
     """
 
     def __init__(self, session):
@@ -98,6 +113,7 @@ class CiefpsettingsPanel(Screen):
         Screen.__init__(self, session)
 
         self["menu"] = MenuList(list(PLUGINS.keys()))
+        self["background"] = Pixmap()
         self["status"] = Label("Select a plugin to install")
         self["key_red"] = Button("Red: Exit")
         self["key_green"] = Button("Green/OK: Install")
@@ -119,6 +135,14 @@ class CiefpsettingsPanel(Screen):
 
         # Provera nove verzije pri otvaranju
         self.check_for_update()
+
+    def set_logo(self):
+        """Set the plugin logo."""
+        logo_path = PLUGIN_LOGO
+        if os.path.exists(logo_path):
+            self["logo"].instance.setPixmapFromFile(logo_path)
+        else:
+            self["status"].setText("Logo file not found.")
 
     def check_for_update(self):
         try:
