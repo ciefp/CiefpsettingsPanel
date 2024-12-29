@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.5"
+PLUGIN_VERSION = "v1.4"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -88,7 +88,7 @@ class CiefpsettingsPanel(Screen):
     skin = """
     <screen name="CiefpsettingsPanel" position="center,center" size="900,600" title="Ciefpsettings Panel">
         <!-- Levih 50% ekrana za meni -->
-        <widget name="menu" position="10,10" size="450,500" scrollbarMode="showOnDemand" font="Regular;24" />
+        <widget name="menu" position="10,10" size="450,500" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
         <!-- Desnih 50% ekrana za pozadinsku sliku i dugmadi -->
         <widget name="background" position="460,0" size="450,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
