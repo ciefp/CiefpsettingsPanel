@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.4"
+PLUGIN_VERSION = "v1.6"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
