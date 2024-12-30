@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.4"
+PLUGIN_VERSION = "v1.7"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -96,16 +96,18 @@ class CiefpsettingsPanel(Screen):
         <!-- Status na dnu levog dela -->
         <widget name="status" position="10,520" size="450,30" transparent="1" font="Regular;22" halign="center" />
         
-       <!-- Dugme za crvenu boju na desnoj strani -->
-       <widget name="key_red" position="460,520" size="450,40" font="Regular;18" halign="center" backgroundColor="#9F1313" />
-       
-       <!-- Dugme za zelenu boju na desnoj strani -->
-       <widget name="key_green" position="460,560" size="450,40" font="Regular;18" halign="center" backgroundColor="#1F771F" />
-    
-       <!-- Dugme za plavu boju na desnoj strani -->
-       <widget name="key_blue" position="460,600" size="450,40" font="Regular;18" halign="center" backgroundColor="#13389F" />
-</screen>
-
+        <!-- Dugme za crvenu boju na desnoj strani -->
+        <widget name="key_red" position="460,520" size="450,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        
+        <!-- Dugme za zelenu boju na desnoj strani -->
+        <widget name="key_green" position="460,560" size="450,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        
+        <!-- Dugme za plavu boju na desnoj strani -->
+        <widget name="key_blue" position="460,600" size="450,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        
+        <!-- Dugme za žutu boju ispod statusne poruke -->
+        <widget name="key_yellow" position="10,560" size="450,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+    </screen>
     """
 
     def __init__(self, session):
@@ -118,6 +120,7 @@ class CiefpsettingsPanel(Screen):
         self["key_red"] = Button("Red: Exit")
         self["key_green"] = Button("Green/OK: Install")
         self["key_blue"] = Button("Blue: Restart Enigma2")
+        self["key_yellow"] = Button("Yellow: Update Plugin")  # Novo žuto dugme
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -126,6 +129,7 @@ class CiefpsettingsPanel(Screen):
                 "green": self.install_plugin,
                 "ok": self.install_plugin,
                 "blue": self.restart_enigma2,
+                "yellow": self.update_plugin,  # Dodana akcija za žuto dugme
                 "cancel": self.close,
             },
         )
@@ -135,14 +139,6 @@ class CiefpsettingsPanel(Screen):
 
         # Provera nove verzije pri otvaranju
         self.check_for_update()
-
-    def set_logo(self):
-        """Set the plugin logo."""
-        logo_path = PLUGIN_LOGO
-        if os.path.exists(logo_path):
-            self["logo"].instance.setPixmapFromFile(logo_path)
-        else:
-            self["status"].setText("Logo file not found.")
 
     def check_for_update(self):
         try:
@@ -164,9 +160,12 @@ class CiefpsettingsPanel(Screen):
 
     def prompt_update(self, answer):
         if answer:
-            # Preuzimanje i instalacija nove verzije
-            self["status"].setText("Downloading and installing update...")
-            self.container.execute(UPDATE_COMMAND)
+            self.update_plugin()
+
+    def update_plugin(self):
+        """Metoda za ažuriranje plugina."""
+        self["status"].setText("Updating plugin...")
+        self.container.execute(UPDATE_COMMAND)
 
     def install_plugin(self):
         selected = self["menu"].getCurrent()
@@ -181,6 +180,7 @@ class CiefpsettingsPanel(Screen):
     def restart_enigma2(self):
         self.container.execute("init 4 && init 3")
         self.close()
+
 
 
 def Plugins(**kwargs):
