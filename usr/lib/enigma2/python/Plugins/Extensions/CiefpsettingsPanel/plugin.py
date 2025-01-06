@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v1.8"
+PLUGIN_VERSION = "v1.9"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -96,27 +96,27 @@ UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.c
 
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="900,600" title="Ciefpsettings Panel">
-        <!-- Levih 50% ekrana za meni -->
-        <widget name="menu" position="10,10" size="450,500" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+    <screen name="CiefpsettingsPanel" position="center,center" size="1200,600" title="Ciefpsettings Panel">
+        <!-- Left 50% of the screen for the menu -->
+        <widget name="menu" position="10,10" size="600,500" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
-        <!-- Desnih 50% ekrana za pozadinsku sliku i dugmadi -->
-        <widget name="background" position="460,0" size="450,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
-        
-        <!-- Status na dnu levog dela -->
-        <widget name="status" position="10,520" size="450,30" transparent="1" font="Regular;22" halign="center" />
-        
-        <!-- Dugme za crvenu boju na desnoj strani -->
-        <widget name="key_red" position="460,520" size="450,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        
-        <!-- Dugme za zelenu boju na desnoj strani -->
-        <widget name="key_green" position="460,560" size="450,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        
-        <!-- Dugme za plavu boju na desnoj strani -->
-        <widget name="key_blue" position="460,600" size="450,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
-        
-        <!-- Dugme za žutu boju ispod statusne poruke -->
-        <widget name="key_yellow" position="10,560" size="450,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <!-- Right 50% of the screen for background image and buttons -->
+        <widget name="background" position="610,0" size="590,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+
+        <!-- Status at the bottom left -->
+        <widget name="status" position="10,520" size="600,30" transparent="1" font="Regular;22" halign="center" />
+
+        <!-- Red button on the right side -->
+        <widget name="key_red" position="610,520" size="590,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+
+        <!-- Green button on the right side -->
+        <widget name="key_green" position="610,560" size="590,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+
+        <!-- Blue button on the right side -->
+        <widget name="key_blue" position="610,600" size="590,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+
+        <!-- Yellow button below the status message on the left -->
+        <widget name="key_yellow" position="10,560" size="600,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
     </screen>
     """
 
