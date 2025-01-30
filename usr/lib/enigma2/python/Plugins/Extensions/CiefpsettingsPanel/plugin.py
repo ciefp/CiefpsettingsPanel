@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v2.3"
+PLUGIN_VERSION = "v2.4"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -20,6 +20,7 @@ GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases
 PLUGINS = {
     "CiefpSettingsDownloader": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSettingsDownloader/main/installer.sh -O - | /bin/sh",
     "CiefpsettingsMotor": "wget https://raw.githubusercontent.com/ciefp/CiefpsettingsMotor/main/installer.sh -O - | /bin/sh",
+    "CiefpSelectSatellite": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSelectSatellite/main/installer.sh -O - | /bin/sh",
     "CiefpE2Converter": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpE2Converter/main/installer.sh -O - | /bin/sh",
     "CiefpWhitelistStreamrelay": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpWhitelistStreamrelay/main/installer.sh -O - | /bin/sh",
     "CiefpSettingsStreamrelay PY3": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSettingsStreamrelay/main/installer.sh -O - | /bin/sh",
@@ -111,7 +112,7 @@ UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.c
 
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="1200,600" title="Ciefpsettings Panel">
+    <screen name="CiefpsettingsPanel" position="center,center" size="1200,600" title="..:: Ciefpsettings Panel ::..">
         <!-- Left 50% of the screen for the menu -->
         <widget name="menu" position="10,10" size="600,500" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
@@ -122,16 +123,16 @@ class CiefpsettingsPanel(Screen):
         <widget name="status" position="10,520" size="600,30" transparent="1" font="Regular;22" halign="center" />
 
         <!-- Red button on the right side -->
-        <widget name="key_red" position="610,520" size="590,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_red" position="610,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Green button on the right side -->
-        <widget name="key_green" position="610,560" size="590,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_green" position="300,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
 
         <!-- Blue button on the right side -->
-        <widget name="key_blue" position="610,600" size="590,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <widget name="key_blue" position="900,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
 
         <!-- Yellow button below the status message on the left -->
-        <widget name="key_yellow" position="10,560" size="600,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_yellow" position="10,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
     </screen>
     """
 
@@ -162,26 +163,6 @@ class CiefpsettingsPanel(Screen):
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
 
-        # Provera nove verzije pri otvaranju
-        self.check_for_update()
-
-    def check_for_update(self):
-        try:
-            response = urllib.request.urlopen(GITHUB_API_URL)
-            data = json.load(response)
-            latest_version = data["tag_name"].lstrip("v")  # Pretpostavka: verzije koriste 'v' prefix
-            if latest_version > PLUGIN_VERSION:
-                self["status"].setText(f"New version available: {latest_version}. Please update!")
-                self.session.openWithCallback(
-                    self.prompt_update,
-                    MessageBox,
-                    f"New version {latest_version} is available. Would you like to install it?",
-                    type=MessageBox.TYPE_YESNO,
-                )
-            else:
-                self["status"].setText("You are using the latest version.")
-        except Exception as e:
-            self["status"].setText(f"Error checking for updates: {e}")
 
     def prompt_update(self, answer):
         if answer:
