@@ -118,27 +118,28 @@ UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.c
 
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="1200,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
+    <screen name="CiefpsettingsPanel" position="center,center" size="1600,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
         <!-- Left 50% of the screen for the menu -->
-        <widget name="menu" position="10,10" size="600,700" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+        <widget name="menu" position="10,10" size="790,700" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
         <!-- Right 50% of the screen for background image and buttons -->
-        <widget name="background" position="610,0" size="590,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="800,0" size="800,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
 
         <!-- Status at the bottom left -->
-        <widget name="status" position="10,720" size="600,30" transparent="1" font="Regular;22" halign="center" />
-
-        <!-- Red button on the right side -->
-        <widget name="key_red" position="610,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="status" position="10,720" size="790,30" transparent="1" font="Regular;22" halign="center" />
+        
+        <!-- Yellow button below the status message on the left -->
+        <widget name="key_yellow" position="10,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
 
         <!-- Green button on the right side -->
-        <widget name="key_green" position="300,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_green" position="400,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+
+        <!-- Red button on the right side -->
+        <widget name="key_red" position="800,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Blue button on the right side -->
-        <widget name="key_blue" position="900,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <widget name="key_blue" position="1200,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
 
-        <!-- Yellow button below the status message on the left -->
-        <widget name="key_yellow" position="10,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
     </screen>
     """.format(version=PLUGIN_VERSION)
 
