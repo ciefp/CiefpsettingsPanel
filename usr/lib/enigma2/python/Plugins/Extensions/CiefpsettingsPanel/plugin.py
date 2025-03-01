@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v2.5"
+PLUGIN_VERSION = "v2.6"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -40,6 +40,7 @@ PLUGINS = {
     "levi45-AddonsManager": "wget https://dreambox4u.com/emilnabil237/plugins/levi45-addonsmanager/installer.sh -O - | /bin/sh",
     "Levi45MulticamManager": "wget https://dreambox4u.com/emilnabil237/plugins/levi45multicammanager/installer.sh -O - | /bin/sh",
     "RaedQuickSignal": "wget https://raw.githubusercontent.com/fairbird/RaedQuickSignal/main/installer.sh -O - | /bin/sh",
+    "SubsSupport 1.7.0-r15": "wget -q --no-check-certificate https://github.com/popking159/ssupport/raw/main/subssupport-install.sh -O - | /bin/sh",
     "SubsSupport_1.5.8-r9": "wget https://dreambox4u.com/emilnabil237/plugins/SubsSupport/installer1.sh -O - | /bin/sh", 
     "SubsSupport_2.1": "wget https://dreambox4u.com/emilnabil237/plugins/SubsSupport/subssupport_2.1.sh -O - | /bin/sh",
     "SubsSupport": "wget https://raw.githubusercontent.com/biko-73/SubsSupport/main/installer.sh -qO - | /bin/sh",
@@ -57,8 +58,12 @@ PLUGINS = {
     "HasBahCa": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/HasBahCa/installer.sh -qO - | /bin/sh",
     "PlutoTV": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/PlutoTV/installer.sh -qO - | /bin/sh",
     "SmartAddonsPanel": "wget https://raw.githubusercontent.com/emilnabil/download-plugins/refs/heads/main/SmartAddonspanel/smart-Panel.sh -O - | /bin/sh",
+    "SatVenusPanel": "wget https://dreambox4u.com/emilnabil237/plugins/satvenuspanel/installer.sh -O - | /bin/sh",
+    "Tspanel": "wget https://dreambox4u.com/emilnabil237/plugins/tspanel/installer.sh -O - | /bin/sh",
     "MagicPanel": "wget -q --no-check-certificate https://gitlab.com/h-ahmed/Panel/-/raw/main/MagicPanel-install.sh -O - | /bin/sh",
     "ElieSat Panel": "wget -q --no-check-certificate https://gitlab.com/eliesat/extensions/-/raw/main/ajpanel/eliesatpanel.sh -O - | /bin/sh",
+    "Panel Lite By Emil Nabil": "wget https://dreambox4u.com/emilnabil237/plugins/ajpanel/new/emil-panel-lite.sh -O - | /bin/sh",
+    "Epanel": "wget https://dreambox4u.com/emilnabil237/plugins/epanel/installer.sh -O - | /bin/sh",
     "Aj Panel custom menu": "wget https://raw.githubusercontent.com/biko-73/AjPanel/main/AJPanel_custom_menu_installer.sh -O - | /bin/sh",
     "Plugins by Emil Nabil": "wget --no-check-certificate -O library-plugins.sh https://raw.githubusercontent.com/emil237/download-plugins/main/library-plugins.sh && bash library-plugins.sh",
     "Oscam Mohamed_OS": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/Cam_Emulator/online-setup | bash -s oscam ....... install OSCam Only\n",
@@ -113,29 +118,29 @@ UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.c
 
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="1200,600" title="..:: Ciefpsettings Panel ::..">
+    <screen name="CiefpsettingsPanel" position="center,center" size="1200,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
         <!-- Left 50% of the screen for the menu -->
-        <widget name="menu" position="10,10" size="600,500" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+        <widget name="menu" position="10,10" size="600,700" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
         <!-- Right 50% of the screen for background image and buttons -->
-        <widget name="background" position="610,0" size="590,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="610,0" size="590,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
 
         <!-- Status at the bottom left -->
-        <widget name="status" position="10,520" size="600,30" transparent="1" font="Regular;22" halign="center" />
+        <widget name="status" position="10,720" size="600,30" transparent="1" font="Regular;22" halign="center" />
 
         <!-- Red button on the right side -->
-        <widget name="key_red" position="610,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_red" position="610,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Green button on the right side -->
-        <widget name="key_green" position="300,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_green" position="300,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
 
         <!-- Blue button on the right side -->
-        <widget name="key_blue" position="900,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <widget name="key_blue" position="900,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
 
         <!-- Yellow button below the status message on the left -->
-        <widget name="key_yellow" position="10,560" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_yellow" position="10,760" size="300,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
     </screen>
-    """
+    """.format(version=PLUGIN_VERSION)
 
     def __init__(self, session):
         self.session = session
