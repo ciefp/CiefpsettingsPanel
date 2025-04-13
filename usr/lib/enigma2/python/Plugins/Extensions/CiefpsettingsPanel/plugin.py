@@ -11,7 +11,7 @@ import json
 import os
 
 # Verzija plugina
-PLUGIN_VERSION = "v2.9"
+PLUGIN_VERSION = "v3.0"
 
 # GitHub API za proveru najnovije verzije
 GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
@@ -42,7 +42,6 @@ PLUGINS = {
     "Levi45MulticamManager": "wget https://dreambox4u.com/emilnabil237/plugins/levi45multicammanager/installer.sh -O - | /bin/sh",
     "RaedQuickSignal": "wget https://raw.githubusercontent.com/fairbird/RaedQuickSignal/main/installer.sh -O - | /bin/sh",
     "SubsSupport 1.7.0-r18 Mnasr": "wget -q --no-check-certificate https://github.com/popking159/ssupport/raw/main/subssupport-install.sh -O - | /bin/sh",
-    "SubsSupport 1.7.0-r15": "wget -q --no-check-certificate https://github.com/popking159/ssupport/raw/main/subssupport-install.sh -O - | /bin/sh",
     "SubsSupport_1.5.8-r9": "wget https://dreambox4u.com/emilnabil237/plugins/SubsSupport/installer1.sh -O - | /bin/sh", 
     "SubsSupport_2.1": "wget https://dreambox4u.com/emilnabil237/plugins/SubsSupport/subssupport_2.1.sh -O - | /bin/sh",
     "SubsSupport": "wget https://raw.githubusercontent.com/biko-73/SubsSupport/main/installer.sh -qO - | /bin/sh",
@@ -53,10 +52,13 @@ PLUGINS = {
     "Youtube": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/YouTube/installer.sh -qO - | /bin/sh",
     "vavoo_1.15": "wget https://dreambox4u.com/emilnabil237/plugins/vavoo/installer.sh -O - | /bin/sh", 
     "E2iPlayer": "wget --no-check-certificate https://gitlab.com/MOHAMED_OS/e2iplayer/-/raw/main/install-e2iplayer.sh?inline=false -qO - | /bin/sh",
-    "XKlass": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/XKlass/online-setup | bash",
     "XCplugin": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/XC-Code/installer.sh -qO - | /bin/sh",
     "X-Streamity": "wget https://raw.githubusercontent.com/biko-73/xstreamity/main/installer.sh -qO - | /bin/sh",
+    "XKlass": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/XKlass/online-setup | bash",
     "JediMakerXtream": "wget https://raw.githubusercontent.com/biko-73/JediMakerXtream/main/installer.sh -qO - | /bin/sh",
+    "JediEpgExtream": "wget https://dreambox4u.com/emilnabil237/plugins/jediepgextream/installer.sh  -O - | /bin/sh",
+    "BouquetMakerXtream": "wget http://dreambox4u.com/emilnabil237/plugins/BouquetMakerXtream/installer.sh -O - | /bin/sh",
+    "E2m3u2Bouquet": "wget https://dreambox4u.com/emilnabil237/plugins/e2m3u2bouquet/installer.sh -O - | /bin/sh",
     "HasBahCa": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/HasBahCa/installer.sh -qO - | /bin/sh",
     "PlutoTV": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/PlutoTV/installer.sh -qO - | /bin/sh",
     "SmartAddonsPanel": "wget https://raw.githubusercontent.com/emilnabil/download-plugins/refs/heads/main/SmartAddonspanel/smart-Panel.sh -O - | /bin/sh",
@@ -94,7 +96,6 @@ PLUGINS = {
     "FreeServerCCcam": "wget https://ia803104.us.archive.org/0/items/freecccamserver/installer.sh -qO - | /bin/sh",
     "BissFeedAutoKey": "wget https://raw.githubusercontent.com/emilnabil/bissfeed-autokey/main/installer.sh  -O - | /bin/sh",
     "feeds-finder": "wget https://dreambox4u.com/emilnabil237/plugins/feeds-finder/installer.sh  -O - | /bin/sh",
-    "feeds-finder": "wget -q --no-check-certificate https://dreambox4u.com/emilnabil237/plugins/feeds-finder/installer.sh -O - | /bin/sh",
     "Virtual Keyboard": "wget https://raw.githubusercontent.com/fairbird/NewVirtualKeyBoard/main/installer.sh -O - | /bin/sh",
     "OpenMultiboot_1.3": "wget https://raw.githubusercontent.com/emil237/openmultiboot/main/installer.sh  -O - | /bin/sh",
     "ShootYourScreen-Py3": "wget -q --no-check-certificate https://raw.githubusercontent.com/emil237/ShootYourScreen-Py3/main/ShootYourScreen-py3.sh -O - | /bin/sh",
@@ -102,6 +103,8 @@ PLUGINS = {
     "astra-sm": "opkg install astra-sm",
     "reboot": "reboot",
     "restartEnigma2": "killall -9 enigma2",
+    "Wget": "opkg install wget",
+    "Curl": "opkg install curl",
     "gstplayer": "opkg install gstplayer",
     "Streamlinksrv": "opkg install streamlinksrv",
     "dabstreamer": "opkg install dabstreamer",
@@ -112,7 +115,7 @@ PLUGINS = {
     "Starts Enigma2 normally": "init 3",
     "stop enigma2": "init 4",
     "stop enigma2": "init 5",
-    "Reboots Enigma2": "nit 6",
+    "Reboots Enigma2": "init 6",
     "Deep Standby": "init 0",
 }
 
@@ -149,30 +152,69 @@ class CiefpsettingsPanel(Screen):
     def __init__(self, session):
         self.session = session
         Screen.__init__(self, session)
-
-        self["menu"] = MenuList(list(PLUGINS.keys()))
+        
+        self.selected_plugins = set()
+        self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
+        
+        self["menu"] = MenuList(self.plugin_display_list)
         self["background"] = Pixmap()
-        self["status"] = Label("Select a plugin to install")
+        self["status"] = Label("Select plugins with OK, install with Green")
         self["key_red"] = Button("Red: Exit")
-        self["key_green"] = Button("Green/OK: Install")
+        self["key_green"] = Button("Green: Install Selected")
         self["key_blue"] = Button("Blue: Restart Enigma2")
-        self["key_yellow"] = Button("Yellow: Update Plugin")  # Novo žuto dugme
+        self["key_yellow"] = Button("Yellow: Update Plugin")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
             {
                 "red": self.close,
-                "green": self.install_plugin,
-                "ok": self.install_plugin,
+                "green": self.install_selected_plugins,
+                "ok": self.toggle_selection,
                 "blue": self.restart_enigma2,
-                "yellow": self.update_plugin,  # Dodana akcija za žuto dugme
+                "yellow": self.update_plugin,
                 "cancel": self.close,
             },
         )
 
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
+        self.update_status()
 
+    def toggle_selection(self):
+        """Toggle selection of the current plugin."""
+        current_index = self["menu"].getSelectionIndex()
+        current_plugin = list(PLUGINS.keys())[current_index]
+        
+        if current_plugin in self.selected_plugins:
+            self.selected_plugins.remove(current_plugin)
+            self.plugin_display_list[current_index] = f"[ ] {current_plugin}"
+        else:
+            self.selected_plugins.add(current_plugin)
+            self.plugin_display_list[current_index] = f"[X] {current_plugin}"
+        
+        self["menu"].setList(self.plugin_display_list)
+        self.update_status()
+
+    def update_status(self):
+        """Update status bar with number of selected items."""
+        count = len(self.selected_plugins)
+        if count == 0:
+            self["status"].setText("Select plugins with OK, install with Green")
+        elif count == 1:
+            self["status"].setText("1 item selected")
+        else:
+            self["status"].setText(f"{count} items selected")
+
+    def install_selected_plugins(self):
+        """Install all selected plugins."""
+        if not self.selected_plugins:
+            self["status"].setText("No plugins selected!")
+            return
+        
+        self["status"].setText(f"Installing {len(self.selected_plugins)} plugins...")
+        # Combine all selected plugin commands
+        commands = "; ".join(PLUGINS[plugin] for plugin in self.selected_plugins)
+        self.container.execute(commands)
 
     def prompt_update(self, answer):
         if answer:
@@ -183,21 +225,17 @@ class CiefpsettingsPanel(Screen):
         self["status"].setText("Updating plugin...")
         self.container.execute(UPDATE_COMMAND)
 
-    def install_plugin(self):
-        selected = self["menu"].getCurrent()
-        if selected:
-            command = PLUGINS[selected]
-            self["status"].setText(f"Installing {selected}...")
-            self.container.execute(command)
-
     def command_finished(self, retval):
         self["status"].setText("Installation complete!" if retval == 0 else "Error during installation!")
+        # Clear selections after installation
+        self.selected_plugins.clear()
+        self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
+        self["menu"].setList(self.plugin_display_list)
+        self.update_status()
 
     def restart_enigma2(self):
         self.container.execute("init 4 && init 3")
         self.close()
-
-
 
 def Plugins(**kwargs):
     return [
