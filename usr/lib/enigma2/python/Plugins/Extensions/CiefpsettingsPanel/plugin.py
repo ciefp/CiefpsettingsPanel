@@ -135,16 +135,16 @@ class CiefpsettingsPanel(Screen):
         <widget name="status" position="10,720" size="790,30" transparent="1" font="Regular;22" halign="center" />
         
         <!-- Yellow button below the status message on the left -->
-        <widget name="key_yellow" position="10,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_yellow" position="10,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
 
         <!-- Green button on the right side -->
-        <widget name="key_green" position="400,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_green" position="400,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
 
         <!-- Red button on the right side -->
-        <widget name="key_red" position="800,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_red" position="800,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Blue button on the right side -->
-        <widget name="key_blue" position="1200,760" size="400,40" font="Bold;18" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <widget name="key_blue" position="1200,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
 
     </screen>
     """.format(version=PLUGIN_VERSION)
@@ -155,6 +155,7 @@ class CiefpsettingsPanel(Screen):
         
         self.selected_plugins = set()
         self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
+        self.current_install_index = 0
         
         self["menu"] = MenuList(self.plugin_display_list)
         self["background"] = Pixmap()
@@ -168,7 +169,7 @@ class CiefpsettingsPanel(Screen):
             ["ColorActions", "SetupActions"],
             {
                 "red": self.close,
-                "green": self.install_selected_plugins,
+                "green": self.start_installation,
                 "ok": self.toggle_selection,
                 "blue": self.restart_enigma2,
                 "yellow": self.update_plugin,
@@ -205,16 +206,42 @@ class CiefpsettingsPanel(Screen):
         else:
             self["status"].setText(f"{count} items selected")
 
-    def install_selected_plugins(self):
-        """Install all selected plugins."""
+    def start_installation(self):
+        """Start installing selected plugins one by one."""
         if not self.selected_plugins:
             self["status"].setText("No plugins selected!")
             return
         
-        self["status"].setText(f"Installing {len(self.selected_plugins)} plugins...")
-        # Combine all selected plugin commands
-        commands = "; ".join(PLUGINS[plugin] for plugin in self.selected_plugins)
-        self.container.execute(commands)
+        self.plugins_to_install = list(self.selected_plugins)
+        self.current_install_index = 0
+        self.install_next_plugin()
+
+    def install_next_plugin(self):
+        """Install the next plugin in the queue."""
+        if self.current_install_index >= len(self.plugins_to_install):
+            self["status"].setText("All installations complete!")
+            self.clear_selections()
+            return
+        
+        plugin = self.plugins_to_install[self.current_install_index]
+        self["status"].setText(f"Installing {plugin} ({self.current_install_index + 1}/{len(self.plugins_to_install)})...")
+        self.container.execute(PLUGINS[plugin])
+
+    def command_finished(self, retval):
+        """Handle completion of a plugin installation."""
+        if retval == 0:
+            self.current_install_index += 1
+            self.install_next_plugin()
+        else:
+            self["status"].setText(f"Error installing {self.plugins_to_install[self.current_install_index]}!")
+            self.clear_selections()
+
+    def clear_selections(self):
+        """Clear selections and reset display."""
+        self.selected_plugins.clear()
+        self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
+        self["menu"].setList(self.plugin_display_list)
+        self.update_status()
 
     def prompt_update(self, answer):
         if answer:
@@ -224,14 +251,6 @@ class CiefpsettingsPanel(Screen):
         """Metoda za ažuriranje plugina."""
         self["status"].setText("Updating plugin...")
         self.container.execute(UPDATE_COMMAND)
-
-    def command_finished(self, retval):
-        self["status"].setText("Installation complete!" if retval == 0 else "Error during installation!")
-        # Clear selections after installation
-        self.selected_plugins.clear()
-        self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
-        self["menu"].setList(self.plugin_display_list)
-        self.update_status()
 
     def restart_enigma2(self):
         self.container.execute("init 4 && init 3")
