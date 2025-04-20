@@ -20,10 +20,10 @@ import glob
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "v3.2"
+PLUGIN_VERSION = "3.2"
 
 # URL za proveru verzije
-VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/version.txt"
+VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
 
 # Fajl za čuvanje instaliranih plugina (perzistentna lokacija)
 INSTALLED_PLUGINS_FILE = "/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/ciefp_installed_plugins.txt"
