@@ -7,26 +7,35 @@ from Components.MenuList import MenuList
 from Components.Button import Button
 from Components.Pixmap import Pixmap
 from enigma import eConsoleAppContainer
+from enigma import eTimer
 import urllib.request
 import json
 import os
 import logging
 import re
+import shutil
+import glob
 
 # Postavljanje logovanja
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "v3.1"
+PLUGIN_VERSION = "v3.2"
+
+# URL za proveru verzije
+VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/version.txt"
 
 # Fajl za čuvanje instaliranih plugina (perzistentna lokacija)
 INSTALLED_PLUGINS_FILE = "/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/ciefp_installed_plugins.txt"
 
+# Privremena lokacija za backup fajla
+BACKUP_PLUGINS_FILE = "/tmp/ciefp_installed_plugins_backup.txt"
+
 # Direktorijum za proveru instaliranih plugina
 EXTENSIONS_DIR = "/usr/lib/enigma2/python/Plugins/Extensions/"
 
-# GitHub API za proveru najnovije verzije
-GITHUB_API_URL = "https://api.github.com/repos/ciefp/CiefpsettingsPanel/releases/latest"
+# Komanda za ažuriranje plugina
+UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/installer.sh -O - | /bin/sh"
 
 # Komande za instalaciju raznih plugina
 PLUGINS = {
@@ -116,7 +125,7 @@ PLUGINS = {
     "Fury HD skin": "wget https://raw.githubusercontent.com/islamsalama117/Fury-FHD/refs/heads/main/installer.sh -O - | /bin/sh",
     "XDREAMY skin": "wget -q --no-check-certificate https://raw.githubusercontent.com/Insprion80/Skins/main/xDreamy/installer.sh -O - | /bin/sh",
     "Al Ayam FHD skin": "wget https://raw.githubusercontent.com/biko-73/TeamNitro/main/script/installerAL.sh -O - | /bin/sh",
-    "Aglare": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/Aglare/online-setup | bash","############ ( Tools ) ############": "", 
+    "Aglare": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/Aglare/online-setup | bash",
     "############ ( Tools ) ############": "", 
     "update": "opkg update",
     "astra-sm": "opkg install astra-sm",
@@ -137,8 +146,6 @@ PLUGINS = {
     "Reboots Enigma2": "init 6",
     "Deep Standby": "init 0",
 }
-# Komanda za ažuriranje plugina
-UPDATE_COMMAND = "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/installer.sh -O - | /bin/sh"
 
 class CiefpPluginManager(Screen):
     skin = """
@@ -153,10 +160,13 @@ class CiefpPluginManager(Screen):
         <widget name="status" position="10,720" size="700,30" transparent="1" font="Regular;22" halign="center" />
 
         <!-- Red button for Delete -->
-        <widget name="key_red" position="10,760" size="330,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_red" position="10,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Green button for Select -->
-        <widget name="key_green" position="350,760" size="330,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_green" position="240,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+
+        <!-- Blue button for Restart Enigma2 -->
+        <widget name="key_blue" position="470,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -170,12 +180,14 @@ class CiefpPluginManager(Screen):
         self["status"] = Label("Select a plugin with OK or Green, delete with Red")
         self["key_red"] = Button("Red: Delete")
         self["key_green"] = Button("Green: Select")
+        self["key_blue"] = Button("Blue: Restart Enigma2")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
             {
                 "red": self.delete_plugin,
                 "green": self.select_plugin,
+                "blue": self.restart_enigma2,
                 "ok": self.select_plugin,
                 "cancel": self.close,
             },
@@ -305,6 +317,111 @@ class CiefpPluginManager(Screen):
             logging.error(f"Error deleting plugin {plugin}, retval: {retval}")
             self["status"].setText(f"Error deleting {plugin}! Check logs.")
 
+    def restart_enigma2(self):
+        """Restart Enigma2."""
+        self.container.execute("init 4 && init 3")
+        self.close()
+
+class IPKInstaller(Screen):
+    skin = """
+    <screen name="IPKInstaller" position="center,center" size="1200,800" title="..:: IPK Installer ::..">
+        <!-- Left part for the IPK file list -->
+        <widget name="menu" position="10,10" size="700,650" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+
+        <!-- Right part for background image -->
+        <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
+
+        <!-- Status at the bottom left -->
+        <widget name="status" position="10,720" size="700,30" transparent="1" font="Regular;22" halign="center" />
+
+        <!-- Red button for Exit -->
+        <widget name="key_red" position="10,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+
+        <!-- Green button for Install -->
+        <widget name="key_green" position="240,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+
+        <!-- Blue button for Restart Enigma2 -->
+        <widget name="key_blue" position="470,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    </screen>
+    """
+
+    def __init__(self, session):
+        self.session = session
+        Screen.__init__(self, session)
+
+        self.ipk_files = self.load_ipk_files()
+        self["menu"] = MenuList(self.ipk_files)
+        self["background"] = Pixmap()
+        self["status"] = Label("Select an IPK file with OK or Green to install")
+        self["key_red"] = Button("Red: Exit")
+        self["key_green"] = Button("Green: Install")
+        self["key_blue"] = Button("Blue: Restart Enigma2")
+
+        self["actions"] = ActionMap(
+            ["ColorActions", "SetupActions"],
+            {
+                "red": self.close,
+                "green": self.install_ipk,
+                "blue": self.restart_enigma2,
+                "ok": self.install_ipk,
+                "cancel": self.close,
+            },
+        )
+
+        self.container = eConsoleAppContainer()
+        self.container.appClosed.append(self.install_finished)
+
+    def load_ipk_files(self):
+        """Load the list of .ipk files from /tmp directory."""
+        ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
+        if not ipk_files:
+            self["status"].setText("No IPK files found in /tmp")
+            return ["No IPK files found"]
+        return ipk_files
+
+    def install_ipk(self):
+        """Install the selected IPK file."""
+        current_index = self["menu"].getSelectionIndex()
+        if current_index >= len(self.ipk_files) or self.ipk_files[current_index] == "No IPK files found":
+            self["status"].setText("No IPK file selected!")
+            return
+
+        ipk_file = self.ipk_files[current_index]
+        ipk_path = os.path.join("/tmp", ipk_file)
+        if not os.path.exists(ipk_path):
+            self["status"].setText(f"File {ipk_file} not found!")
+            logging.error(f"IPK file {ipk_path} not found")
+            return
+
+        self["status"].setText(f"Installing {ipk_file}...")
+        logging.debug(f"Installing IPK file: {ipk_path}")
+        install_command = f"opkg install {ipk_path}"
+        self.container.execute(install_command)
+
+    def install_finished(self, retval):
+        """Handle completion of IPK installation."""
+        current_index = self["menu"].getSelectionIndex()
+        if current_index >= len(self.ipk_files) or self.ipk_files[current_index] == "No IPK files found":
+            self["status"].setText("No IPK file selected!")
+            return
+
+        ipk_file = self.ipk_files[current_index]
+        if retval == 0:
+            logging.debug(f"Successfully installed IPK: {ipk_file}")
+            self["status"].setText(f"{ipk_file} installed successfully!")
+            self.session.open(MessageBox, f"The IPK {ipk_file} has been installed. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
+            # Refresh the file list
+            self.ipk_files = self.load_ipk_files()
+            self["menu"].setList(self.ipk_files)
+        else:
+            logging.error(f"Error installing IPK {ipk_file}, retval: {retval}")
+            self["status"].setText(f"Error installing {ipk_file}! Check logs.")
+
+    def restart_enigma2(self):
+        """Restart Enigma2."""
+        self.container.execute("init 4 && init 3")
+        self.close()
+
 class CiefpsettingsPanel(Screen):
     skin = """
     <screen name="CiefpsettingsPanel" position="center,center" size="1600,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
@@ -339,6 +456,8 @@ class CiefpsettingsPanel(Screen):
         self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
         self.current_install_index = 0
         self.installed_plugins = set()  # Privremena lista za praćenje uspešno instaliranih plugina
+        self.version_check_in_progress = False
+        self.version_buffer = b''
 
         self["menu"] = MenuList(self.plugin_display_list)
         self["background"] = Pixmap()
@@ -346,7 +465,7 @@ class CiefpsettingsPanel(Screen):
         self["key_red"] = Button("Red: Plugin Manager")
         self["key_green"] = Button("Green: Install Selected")
         self["key_blue"] = Button("Blue: Restart Enigma2")
-        self["key_yellow"] = Button("Yellow: Update Plugin")
+        self["key_yellow"] = Button("Yellow: IPK Installer")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -355,7 +474,7 @@ class CiefpsettingsPanel(Screen):
                 "green": self.start_installation,
                 "ok": self.toggle_selection,
                 "blue": self.restart_enigma2,
-                "yellow": self.update_plugin,
+                "yellow": self.open_ipk_installer,
                 "cancel": self.close,
             },
         )
@@ -363,6 +482,11 @@ class CiefpsettingsPanel(Screen):
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
         self.update_status()
+
+        # Automatska provera verzije pri pokretanju
+        self.check_version_timer = eTimer()
+        self.check_version_timer.callback.append(self.check_for_updates)
+        self.check_version_timer.start(1000, True)  # Pokreni proveru nakon 1 sekunde
 
     def toggle_selection(self):
         """Toggle selection of the current plugin and log it immediately."""
@@ -524,16 +648,101 @@ class CiefpsettingsPanel(Screen):
         """Open the Plugin Manager screen."""
         self.session.open(CiefpPluginManager)
 
-    def prompt_update(self, answer):
-        if answer:
-            self.update_plugin()
+    def open_ipk_installer(self):
+        """Open the IPK Installer screen."""
+        self.session.open(IPKInstaller)
 
-    def update_plugin(self):
-        """Metoda za ažuriranje plugina."""
-        self["status"].setText("Updating plugin...")
-        self.container.execute(UPDATE_COMMAND)
+    def check_for_updates(self):
+        """Provera dostupnih ažuriranja."""
+        try:
+            if self.version_check_in_progress:
+                return
+            self.version_check_in_progress = True
+            self["status"].setText("Checking for updates...")
+            self.version_buffer = b''
+            self.container = eConsoleAppContainer()
+            self.container.dataAvail.append(self.version_data_avail)
+            self.container.appClosed.append(self.version_check_closed)
+            self.container.execute(f"wget -q -O - {VERSION_URL}")
+        except Exception as e:
+            self.version_check_in_progress = False
+            self["status"].setText(f"Update error: {str(e)}")
+            logging.error(f"Error checking for updates: {str(e)}")
+
+    def version_data_avail(self, data):
+        """Sakupljanje podataka o verziji."""
+        self.version_buffer += data
+
+    def version_check_closed(self, retval):
+        """Obrada rezultata provere verzije."""
+        self.version_check_in_progress = False
+        if retval == 0:
+            try:
+                remote_version = self.version_buffer.decode().strip()
+                if remote_version != PLUGIN_VERSION:
+                    self.session.openWithCallback(
+                        self.start_update,
+                        MessageBox,
+                        f"Update available ({remote_version}). Install now?",
+                        MessageBox.TYPE_YESNO
+                    )
+                else:
+                    self["status"].setText("Plugin is up to date.")
+            except Exception as e:
+                self["status"].setText(f"Update check failed: {str(e)}")
+                logging.error(f"Error decoding version data: {str(e)}")
+        else:
+            self["status"].setText("Update check failed.")
+            logging.error(f"Version check failed with return value: {retval}")
+
+    def start_update(self, answer):
+        """Pokretanje ažuriranja ako je korisnik potvrdio."""
+        if answer:
+            try:
+                self["status"].setText("Backing up installed plugins list...")
+                # Provera da li fajl postoji i pravljenje backup-a
+                if os.path.exists(INSTALLED_PLUGINS_FILE):
+                    shutil.copy2(INSTALLED_PLUGINS_FILE, BACKUP_PLUGINS_FILE)
+                    logging.debug(f"Backed up {INSTALLED_PLUGINS_FILE} to {BACKUP_PLUGINS_FILE}")
+                else:
+                    logging.debug(f"No {INSTALLED_PLUGINS_FILE} found for backup")
+
+                self["status"].setText("Updating plugin...")
+                self.container = eConsoleAppContainer()
+                self.container.appClosed.append(self.update_completed)
+                self.container.execute(UPDATE_COMMAND)
+            except Exception as e:
+                self["status"].setText(f"Backup error: {str(e)}")
+                logging.error(f"Error during backup: {str(e)}")
+
+    def update_completed(self, retval):
+        """Obrada završetka ažuriranja."""
+        try:
+            # Pokušaj vraćanja backup fajla
+            if os.path.exists(BACKUP_PLUGINS_FILE):
+                # Proveri da li direktorijum postoji, ako ne, kreiraj ga
+                plugin_dir = os.path.dirname(INSTALLED_PLUGINS_FILE)
+                if not os.path.exists(plugin_dir):
+                    os.makedirs(plugin_dir)
+                    logging.debug(f"Created directory: {plugin_dir}")
+
+                shutil.move(BACKUP_PLUGINS_FILE, INSTALLED_PLUGINS_FILE)
+                logging.debug(f"Restored {BACKUP_PLUGINS_FILE} to {INSTALLED_PLUGINS_FILE}")
+            else:
+                logging.debug(f"No backup file {BACKUP_PLUGINS_FILE} found for restoration")
+
+            if retval == 0:
+                self["status"].setText("Update successful. Restarting...")
+                self.session.open(TryQuitMainloop, 3)
+            else:
+                self["status"].setText("Update failed.")
+                logging.error(f"Update failed with return value: {retval}")
+        except Exception as e:
+            self["status"].setText(f"Restore error: {str(e)}")
+            logging.error(f"Error during restore: {str(e)}")
 
     def restart_enigma2(self):
+        """Restart Enigma2."""
         self.container.execute("init 4 && init 3")
         self.close()
 
