@@ -329,7 +329,7 @@ class IPKInstaller(Screen):
         <widget name="menu" position="10,10" size="700,650" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
 
         <!-- Right part for background image -->
-        <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
 
         <!-- Status at the bottom left -->
         <widget name="status" position="10,720" size="700,30" transparent="1" font="Regular;22" halign="center" />
@@ -649,7 +649,12 @@ class CiefpsettingsPanel(Screen):
         self.session.open(CiefpPluginManager)
 
     def open_ipk_installer(self):
-        """Open the IPK Installer screen."""
+        """Open the IPK Installer screen if IPK files are available."""
+        ipk_files = glob.glob("/tmp/*.ipk")
+        if not ipk_files:
+            self["status"].setText("There are no IPK files available in /tmp")
+            logging.debug("No IPK files found in /tmp, skipping IPKInstaller screen")
+            return
         self.session.open(IPKInstaller)
 
     def check_for_updates(self):
