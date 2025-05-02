@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "3.4"
+PLUGIN_VERSION = "3.5"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -51,6 +51,7 @@ PLUGINS = {
     "CiefpBouquetUpdater": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpBouquetUpdater/main/installer.sh -O - | /bin/sh",
     "CiefpChannelManager": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpChannelManager/main/installer.sh -O - | /bin/sh",
     "CiefpE2Converter": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpE2Converter/main/installer.sh -O - | /bin/sh",
+    "CiefpSatellitesXmlEditor": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSatelliteXmlEditor/main/installer.sh -O - | /bin/sh",
     "CiefpIPTVBouquets": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpIPTVBouquets/main/installer.sh -O - | /bin/sh",
     "CiefpWhitelistStreamrelay": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpWhitelistStreamrelay/main/installer.sh -O - | /bin/sh",
     "CiefpSettingsStreamrelay PY3": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSettingsStreamrelay/main/installer.sh -O - | /bin/sh",
@@ -158,7 +159,7 @@ class CiefpPluginManager(Screen):
     skin = """
     <screen name="CiefpPluginManager" position="center,center" size="1200,800" title="..:: Ciefp Plugin Manager ::..">
         <!-- Left part for the installed plugins list -->
-        <widget name="menu" position="10,10" size="700,650" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+        <widget name="menu" position="10,10" size="700,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
 
         <!-- Right part for background image -->
         <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
@@ -333,7 +334,7 @@ class IPKInstaller(Screen):
     skin = """
     <screen name="IPKInstaller" position="center,center" size="1600,800" title="..:: IPK and TAR.GZ Installer ::..">
         <!-- Left part for the IPK and TAR.GZ file list -->
-        <widget name="menu" position="10,10" size="1080,650" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+        <widget name="menu" position="10,10" size="1080,650" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
 
         <!-- Right part for background image -->
         <widget name="background" position="1100,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
@@ -637,7 +638,7 @@ class CiefpsettingsPanel(Screen):
     skin = """
     <screen name="CiefpsettingsPanel" position="center,center" size="1600,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
         <!-- Left 50% of the screen for the menu -->
-        <widget name="menu" position="10,10" size="790,700" scrollbarMode="showOnDemand" itemHeight="50" font="Regular;26" />
+        <widget name="menu" position="10,10" size="790,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
 
         <!-- Right 50% of the screen for background image and buttons -->
         <widget name="background" position="800,0" size="800,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
@@ -646,13 +647,13 @@ class CiefpsettingsPanel(Screen):
         <widget name="status" position="10,720" size="790,30" transparent="1" font="Regular;22" halign="center" />
 
         <!-- Yellow button below the status message on the left -->
-        <widget name="key_yellow" position="10,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_red" position="10,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
 
         <!-- Green button on the right side -->
         <widget name="key_green" position="400,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
 
         <!-- Red button on the right side -->
-        <widget name="key_red" position="800,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_yellow" position="800,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
 
         <!-- Blue button on the right side -->
         <widget name="key_blue" position="1200,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
