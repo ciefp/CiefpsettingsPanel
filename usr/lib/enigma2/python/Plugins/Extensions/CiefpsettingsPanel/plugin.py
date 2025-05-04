@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "3.5"
+PLUGIN_VERSION = "3.6"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -64,15 +64,16 @@ PLUGINS = {
     "Linuxsat Panel": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/LinuxsatPanel/main/installer.sh -O - | /bin/sh",
     "Levi45Addons": "wget https://dreambox4u.com/emilnabil237/plugins/levi45-addonsmanager/installer.sh -O - | /bin/sh",
     "SmartAddonsPanel": "wget https://raw.githubusercontent.com/emilnabil/download-plugins/refs/heads/main/SmartAddonspanel/smart-Panel.sh -O - | /bin/sh",
-    "MagicPanel": "wget -q --no-check-certificate https://gitlab.com/h-ahmed/Panel/-/raw/main/MagicPanel-install.sh -O - | /bin/sh",
+    "MagicPanel": "wget https://gitlab.com/h-ahmed/Panel/-/raw/main/MagicPanel-install.sh -O - | /bin/sh",
     "ElieSat Panel": "wget -q --no-check-certificate https://gitlab.com/eliesat/extensions/-/raw/main/ajpanel/eliesatpanel.sh -O - | /bin/sh",
     "Panel Lite By Emil Nabil": "wget https://dreambox4u.com/emilnabil237/plugins/ajpanel/new/emil-panel-lite.sh -O - | /bin/sh",
+    "Emil Panel": "wget https://github.com/emilnabil/download-plugins/raw/refs/heads/main/EmilPanel/emilpanel.sh -O - | /bin/sh",
     "Epanel": "wget https://dreambox4u.com/emilnabil237/plugins/epanel/installer.sh -O - | /bin/sh",
     "SatVenusPanel": "wget https://dreambox4u.com/emilnabil237/plugins/satvenuspanel/installer.sh -O - | /bin/sh",
     "Tspanel": "wget https://dreambox4u.com/emilnabil237/plugins/tspanel/installer.sh -O - | /bin/sh",
     "############ ( IPTV Plugins ) ############": "", 
     "X-Streamity": "wget https://raw.githubusercontent.com/biko-73/xstreamity/main/installer.sh -qO - | /bin/sh",
-    "XKlass": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/XKlass/online-setup | bash",
+    "XKlass": "wget https://dreambox4u.com/emilnabil237/plugins/xklass/installer.sh -O - | /bin/sh",
     "JediMakerXtream": "wget https://raw.githubusercontent.com/biko-73/JediMakerXtream/main/installer.sh -qO - | /bin/sh",
     "JediEpgExtream": "wget https://dreambox4u.com/emilnabil237/plugins/jediepgextream/installer.sh  -O - | /bin/sh",
     "BouquetMakerXtream": "wget http://dreambox4u.com/emilnabil237/plugins/BouquetMakerXtream/installer.sh -O - | /bin/sh",
@@ -99,6 +100,7 @@ PLUGINS = {
     "SubsSupport": "wget https://raw.githubusercontent.com/biko-73/SubsSupport/main/installer.sh -qO - | /bin/sh",
     "ChocholousekPicons": "https://github.com/s3n0/e2plugins/raw/master/ChocholousekPicons/online-setup -qO - | bash -s install",
     "The Weather": "wget https://raw.githubusercontent.com/biko-73/TheWeather/main/installer.sh -O - | /bin/sh",
+    "Astronomy": "wget https://raw.githubusercontent.com/emilnabil/download-plugins/refs/heads/main/astronomy/installer.sh -O - | /bin/sh", 
     "Youtube": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/YouTube/installer.sh -qO - | /bin/sh",
     "Aj Panel custom menu": "wget https://raw.githubusercontent.com/biko-73/AjPanel/main/AJPanel_custom_menu_installer.sh -O - | /bin/sh",
     "Plugins by Emil Nabil": "wget --no-check-certificate -O library-plugins.sh https://raw.githubusercontent.com/emil237/download-plugins/main/library-plugins.sh && bash library-plugins.sh",
@@ -107,7 +109,7 @@ PLUGINS = {
     "IP To Sat": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/IPtoSAT/online-setup | bash",
     "XtraEvante": "wget https://github.com/digiteng/xtra/raw/main/xtraEvent.sh -qO - | /bin/sh",
     "E2iPlayer_TSIPlayer": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/E2IPLAYER_TSiplayer/installer.sh -qO - | /bin/sh",
-    "FootOnsat": "wget https://raw.githubusercontent.com/ziko-ZR1/FootOnsat/main/Download/install.sh -qO - | /bin/sh",
+    "Footonsat": "wget https://dreambox4u.com/emilnabil237/plugins/FootOnsat/installer.sh -O - | /bin/sh",
     "FooTOnSat MOHAMED_OS": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/FootOnsat/online-setup | bash",
     "Simple-Zoom-Panel": "wget https://dreambox4u.com/emilnabil237/plugins/simple-zoom-panel/installer.sh -O - | /bin/sh", 
     "FreeServerCCcam": "wget https://ia803104.us.archive.org/0/items/freecccamserver/installer.sh -qO - | /bin/sh",
@@ -155,25 +157,15 @@ PLUGINS = {
     "Deep Standby": "init 0",
 }
 
+
 class CiefpPluginManager(Screen):
     skin = """
     <screen name="CiefpPluginManager" position="center,center" size="1200,800" title="..:: Ciefp Plugin Manager ::..">
-        <!-- Left part for the installed plugins list -->
         <widget name="menu" position="10,10" size="700,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
-
-        <!-- Right part for background image -->
         <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
-
-        <!-- Status at the bottom left -->
         <widget name="status" position="10,720" size="700,30" transparent="1" font="Regular;22" halign="center" />
-
-        <!-- Red button for Delete -->
         <widget name="key_red" position="10,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-
-        <!-- Green button for Select -->
         <widget name="key_green" position="240,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-
-        <!-- Blue button for Restart Enigma2 -->
         <widget name="key_blue" position="470,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
@@ -205,50 +197,86 @@ class CiefpPluginManager(Screen):
         self.container.appClosed.append(self.delete_finished)
 
     def load_installed_plugins(self):
-        """Load the list of installed plugins from the log file."""
-        if os.path.exists(INSTALLED_PLUGINS_FILE):
-            with open(INSTALLED_PLUGINS_FILE, "r") as f:
-                return [line.strip() for line in f.readlines() if line.strip()]
-        return []
+        """Load the list of installed plugins from the Extensions directory, excluding system plugins."""
+        plugins = []
+        extensions_dir = "/usr/lib/enigma2/python/Plugins/Extensions/"
 
-    def save_installed_plugins(self):
-        """Save the list of installed plugins to the log file."""
-        try:
-            with open(INSTALLED_PLUGINS_FILE, "w") as f:
-                for plugin in self.installed_plugins:
-                    f.write(f"{plugin}\n")
-            logging.debug(f"Successfully saved plugins to {INSTALLED_PLUGINS_FILE}")
-        except Exception as e:
-            logging.error(f"Error saving plugins to {INSTALLED_PLUGINS_FILE}: {str(e)}")
-            self["status"].setText(f"Error saving plugins: {str(e)}")
+        # Lista sistemskih plugina koji se ne prikazuju
+        SYSTEM_PLUGINS = [
+            "EMC", "FileCommander", "IMDb", "Setup", "MediaPlayer",
+            "MediaScanner", "MyMetrixLite", "OpenWebif", "PicturePlayer",
+            "Programmlisten-Updater", "SoftwareManager", "Hotkey",
+            "EPGImport", "AutoBouquetsMaker"
+        ]
+
+        # Mapa za korisnički prijateljske nazive
+        FOLDER_TO_NAME_MAP = {
+            "Levi45Addons": "Levi45 Addons Manager",
+            "tvaddon": "TV Addon",
+            "SubsSupport": "SubsSupport 1.7.0-r18 Mnasr",
+            "CiefpsettingsPanel": "CiefpSettingsPanel",
+            "AJPanel": "AjPanel",
+        }
+
+        if not os.path.exists(extensions_dir):
+            logging.warning(f"Extensions directory {extensions_dir} does not exist")
+            return plugins
+
+        for folder in os.listdir(extensions_dir):
+            folder_path = os.path.join(extensions_dir, folder)
+            if os.path.isdir(folder_path):
+                if os.path.exists(os.path.join(folder_path, "__init__.py")) or \
+                        os.path.exists(os.path.join(folder_path, "plugin.py")):
+                    if folder not in SYSTEM_PLUGINS:
+                        display_name = FOLDER_TO_NAME_MAP.get(folder, folder)
+                        plugins.append(display_name)
+                    else:
+                        logging.debug(f"Skipping system plugin: {folder}")
+                else:
+                    logging.debug(f"Skipping {folder}: not a valid plugin directory")
+
+        plugins.sort()
+        return plugins
 
     def find_plugin_folder(self, plugin_name):
-        """Pronalazi folder plugina u Extensions direktorijumu, uzimajući u obzir sličnosti."""
+        """Pronalazi folder plugina u Extensions direktorijumu."""
         if not os.path.exists(EXTENSIONS_DIR):
             return None
 
-        # Eksplicitna mapa naziva plugina i foldera
+        SYSTEM_PLUGINS = [
+            "EMC", "FileCommander", "IMDb", "Setup", "MediaPlayer",
+            "MediaScanner", "MyMetrixLite", "OpenWebif", "PicturePlayer",
+            "Programmlisten-Updater", "SoftwareManager", "Hotkey",
+            "EPGImport", "AutoBouquetsMaker"
+        ]
+
         PLUGIN_FOLDER_MAP = {
-            "Levi45 Addons Manager": "Levi45Addons",  # Potvrđen tačan naziv foldera
+            "Levi45 Addons Manager": "Levi45Addons",
             "TV Addon": "tvaddon",
             "SubsSupport 1.7.0-r18 Mnasr": "SubsSupport",
+            "CiefpSettingsPanel": "CiefpsettingsPanel",
+            "AjPanel": "AJPanel",
         }
         if plugin_name in PLUGIN_FOLDER_MAP:
             folder = PLUGIN_FOLDER_MAP[plugin_name]
+            if folder in SYSTEM_PLUGINS:
+                logging.warning(f"Cannot access system plugin folder: {folder}")
+                return None
             if os.path.exists(os.path.join(EXTENSIONS_DIR, folder)):
                 return folder
 
-        # Normalizacija naziva plugina
         normalized_name = re.sub(r'[\s\-\_]', '', plugin_name.lower())
         normalized_name = re.sub(r'\d+\.\d+\.\d+.*|r\d+', '', normalized_name)
         for folder in os.listdir(EXTENSIONS_DIR):
+            if folder in SYSTEM_PLUGINS:
+                continue
             normalized_folder = re.sub(r'[\s\-\_]', '', folder.lower())
             if normalized_folder == normalized_name or folder.lower() == plugin_name.lower():
                 return folder
         return None
 
     def select_plugin(self):
-        """Highlight the selected plugin (no additional action for now)."""
+        """Highlight the selected plugin."""
         current_index = self["menu"].getSelectionIndex()
         if current_index < len(self.installed_plugins):
             self["status"].setText(f"Selected: {self.installed_plugins[current_index]}")
@@ -267,15 +295,14 @@ class CiefpPluginManager(Screen):
 
         if not folder_name:
             logging.warning(f"Plugin {plugin} not found in {EXTENSIONS_DIR}")
-            self.session.openWithCallback(
-                lambda confirmed: self.confirm_delete(plugin, None, confirmed),
-                MessageBox,
-                f"Plugin {plugin} directory not found. Remove from list?",
-                MessageBox.TYPE_YESNO
-            )
+            self.session.open(MessageBox, f"Plugin {plugin} directory not found or is a system plugin!",
+                              MessageBox.TYPE_ERROR)
             return
 
-        # Prikazivanje potvrde za brisanje
+        if folder_name == "CiefpsettingsPanel":
+            self.session.open(MessageBox, "Cannot delete CiefpSettingsPanel!", MessageBox.TYPE_ERROR)
+            return
+
         message = f"Do you want to delete the plugin = {folder_name}?"
         self.session.openWithCallback(
             lambda confirmed: self.confirm_delete(plugin, folder_name, confirmed),
@@ -288,20 +315,11 @@ class CiefpPluginManager(Screen):
         """Izvršava brisanje ako je korisnik potvrdio."""
         current_index = self["menu"].getSelectionIndex()
         if confirmed:
-            if folder_name:
-                plugin_path = os.path.join(EXTENSIONS_DIR, folder_name)
-                logging.debug(f"Attempting to delete plugin directory: {plugin_path}")
-                delete_command = f"sh -c 'rm -rf {plugin_path}'"
-                self.container.execute(delete_command)
-                # Pokušaj uklanjanja paketa
-                os.system(f"opkg remove enigma2-plugin-extensions-{folder_name.lower()}")
-            else:
-                # Ako folder nije pronađen, samo ukloni iz liste
-                logging.debug(f"Removing plugin {plugin} from list (no folder found)")
-                del self.installed_plugins[current_index]
-                self.save_installed_plugins()
-                self["menu"].setList(self.installed_plugins)
-                self["status"].setText(f"{plugin} removed from list!")
+            plugin_path = os.path.join(EXTENSIONS_DIR, folder_name)
+            logging.debug(f"Attempting to delete plugin directory: {plugin_path}")
+            delete_command = f"sh -c 'rm -rf {plugin_path}'"
+            self.container.execute(delete_command)
+            os.system(f"opkg remove enigma2-plugin-extensions-{folder_name.lower()}")
         else:
             logging.debug(f"Deletion of plugin {plugin} canceled by user")
             self["status"].setText("Deletion canceled")
@@ -318,9 +336,10 @@ class CiefpPluginManager(Screen):
             logging.debug(f"Successfully deleted plugin: {plugin}")
             self["status"].setText(f"{plugin} deleted successfully!")
             del self.installed_plugins[current_index]
-            self.save_installed_plugins()
+            self.installed_plugins = self.load_installed_plugins()  # Osveži listu
             self["menu"].setList(self.installed_plugins)
-            self.session.open(MessageBox, f"The plugin {plugin} has been deleted. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
+            self.session.open(MessageBox, f"The plugin {plugin} has been deleted. Please restart Enigma manually.",
+                              MessageBox.TYPE_INFO, timeout=10)
         else:
             logging.error(f"Error deleting plugin {plugin}, retval: {retval}")
             self["status"].setText(f"Error deleting {plugin}! Check logs.")
@@ -335,22 +354,16 @@ class IPKInstaller(Screen):
     <screen name="IPKInstaller" position="center,center" size="1600,800" title="..:: IPK and TAR.GZ Installer ::..">
         <!-- Left part for the IPK and TAR.GZ file list -->
         <widget name="menu" position="10,10" size="1080,650" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
-
         <!-- Right part for background image -->
         <widget name="background" position="1100,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
-
         <!-- Status at the bottom left -->
         <widget name="status" position="10,720" size="1080,30" transparent="1" font="Regular;22" halign="center" />
-
         <!-- Red button for Exit -->
         <widget name="key_red" position="10,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-
-        <!-- Green button for Install IPK -->
+        <!-- Green button for Install Selected -->
         <widget name="key_green" position="270,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-
-        <!-- Yellow button for Install TAR.GZ -->
+        <!-- Yellow button (reserved for future use or removed) -->
         <widget name="key_yellow" position="530,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-
         <!-- Blue button for Restart Enigma2 -->
         <widget name="key_blue" position="790,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
@@ -360,62 +373,147 @@ class IPKInstaller(Screen):
         self.session = session
         Screen.__init__(self, session)
 
-        self.files = self.load_files()
-        self["menu"] = MenuList(self.files)
+        self.selected_files = set()  # Skup za praćenje selektovanih fajlova
+        self.file_display_list = []  # Lista za prikaz sa [ ] ili [X]
+        self.files = []  # Lista originalnih imena fajlova
+        self.load_files()
+        self["menu"] = MenuList(self.file_display_list)
         self["background"] = Pixmap()
-        self["status"] = Label("Select a file with OK, install IPK with Green, TAR.GZ with Yellow")
+        self["status"] = Label("Select files with OK, install with Green")
         self["key_red"] = Button("Red: Exit")
-        self["key_green"] = Button("Green: Install IPK")
-        self["key_yellow"] = Button("Yellow: Install TAR.GZ")
+        self["key_green"] = Button("Green: Install Selected")
+        self["key_yellow"] = Button("Yellow: --")  # Može se ukloniti ili iskoristiti
         self["key_blue"] = Button("Blue: Restart Enigma2")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
             {
                 "red": self.close,
-                "green": self.install_ipk,
-                "yellow": self.install_tar_gz,
+                "green": self.start_installation,
+                "yellow": self.no_action,  # Placeholder za buduću funkcionalnost
                 "blue": self.restart_enigma2,
-                "ok": self.select_file,
+                "ok": self.toggle_selection,
                 "cancel": self.close,
             },
         )
 
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.install_finished)
+        self.current_install_index = 0
+        self.files_to_install = []
+        self.update_status()
+
+    def no_action(self):
+        """Placeholder za žuto dugme."""
+        pass
 
     def load_files(self):
-        """Load the list of .ipk and .tar.gz files from /tmp directory."""
-        ipk_files = [f"[IPK] {os.path.basename(f)}" for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
-        tar_gz_files = [f"[TAR.GZ] {os.path.basename(f)}" for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
-        all_files = ipk_files + tar_gz_files
-        if not all_files:
-            self["status"].setText("No IPK or TAR.GZ files found in /tmp")
-            return ["No IPK or TAR.GZ files found"]
-        return all_files
+        """Učitaj listu .ipk i .tar.gz fajlova iz /tmp direktorijuma."""
+        self.files = []
+        self.file_display_list = []
+        self.selected_files.clear()
 
-    def select_file(self):
-        """Highlight the selected file."""
+        ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
+        tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
+        all_files = ipk_files + tar_gz_files
+
+        if not all_files:
+            self.file_display_list = ["No IPK or TAR.GZ files found"]
+            return
+
+        self.files = all_files
+        self.file_display_list = [f"[ ] {f}" for f in all_files]
+
+    def toggle_selection(self):
+        """Označi ili ukloni oznaku sa trenutnog fajla."""
         current_index = self["menu"].getSelectionIndex()
-        if current_index < len(self.files) and self.files[current_index] != "No IPK or TAR.GZ files found":
-            self["status"].setText(f"Selected: {self.files[current_index]}")
-        else:
+        if current_index >= len(self.files) or not self.files:
             self["status"].setText("No file selected")
+            return
+
+        current_file = self.files[current_index]
+        if current_file in self.selected_files:
+            self.selected_files.remove(current_file)
+            self.file_display_list[current_index] = f"[ ] {current_file}"
+        else:
+            self.selected_files.add(current_file)
+            self.file_display_list[current_index] = f"[X] {current_file}"
+
+        self["menu"].setList(self.file_display_list)
+        self.update_status()
+
+    def update_status(self):
+        """Ažuriraj statusnu traku sa brojem selektovanih fajlova."""
+        count = len(self.selected_files)
+        if count == 0:
+            self["status"].setText("Select files with OK, install with Green")
+        elif count == 1:
+            self["status"].setText("1 file selected")
+        else:
+            self["status"].setText(f"{count} files selected")
+
+    def start_installation(self):
+        """Pokreni instalaciju selektovanih fajlova."""
+        if not self.selected_files:
+            self["status"].setText("No files selected!")
+            return
+
+        self.files_to_install = list(self.selected_files)
+        self.current_install_index = 0
+        self.install_next_file()
+
+    def install_next_file(self):
+        """Instaliraj sledeći fajl u redu."""
+        if self.current_install_index >= len(self.files_to_install):
+            self["status"].setText("All installations complete!")
+            self.selected_files.clear()
+            self.load_files()
+            self["menu"].setList(self.file_display_list)
+            self.update_status()
+            return
+
+        current_file = self.files_to_install[self.current_install_index]
+        self["status"].setText(f"Installing {current_file} ({self.current_install_index + 1}/{len(self.files_to_install)})...")
+        logging.debug(f"Processing file: {current_file}")
+
+        file_path = os.path.join("/tmp", current_file)
+        if not os.path.exists(file_path):
+            logging.error(f"File {file_path} not found")
+            self["status"].setText(f"File {current_file} not found!")
+            self.current_install_index += 1
+            self.install_next_file()
+            return
+
+        if current_file.endswith(".ipk"):
+            self.current_package_name = None
+            package_name = self.get_ipk_package_name(file_path)
+            if package_name:
+                self.current_package_name = package_name
+            else:
+                package_name = re.sub(r'[_-]\d+\.\d+\.\d+.*', '', current_file).replace('.ipk', '')
+                self.current_package_name = package_name
+                logging.warning(f"Using fallback package name: {package_name} for {current_file}")
+            install_command = f"opkg install {file_path}"
+            self.container.execute(install_command)
+        elif current_file.endswith(".tar.gz"):
+            self.install_tar_gz_file(file_path, current_file)
+        else:
+            logging.error(f"Unsupported file type: {current_file}")
+            self["status"].setText(f"Unsupported file type: {current_file}")
+            self.current_install_index += 1
+            self.install_next_file()
 
     def get_ipk_package_name(self, ipk_path):
-        """Extract the package name from an IPK file."""
+        """Izvuci naziv paketa iz IPK fajla (preuzeto iz originalnog koda)."""
         try:
-            # Kreiraj privremeni direktorijum za raspakivanje
             temp_dir = "/tmp/ipk_extract/"
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
             os.makedirs(temp_dir)
 
-            # Raspakuj .ipk fajl (to je tar.gz arhiva)
             with tarfile.open(ipk_path, "r:*") as tar:
                 tar.extractall(path=temp_dir)
 
-            # Pronađi control.tar.gz i raspakuj ga
             control_tar = None
             for root, _, files in os.walk(temp_dir):
                 for f in files:
@@ -432,14 +530,12 @@ class IPKInstaller(Screen):
             with tarfile.open(control_tar, "r:gz") as control:
                 control.extractall(path=temp_dir)
 
-            # Pronađi control fajl
             control_file = os.path.join(temp_dir, "control")
             if not os.path.exists(control_file):
                 logging.warning(f"No control file found in {ipk_path}")
                 shutil.rmtree(temp_dir)
                 return None
 
-            # Čitaj Package liniju iz control fajla
             package_name = None
             with open(control_file, "r") as f:
                 for line in f:
@@ -447,11 +543,9 @@ class IPKInstaller(Screen):
                         package_name = line.split(":", 1)[1].strip()
                         break
 
-            # Očisti privremeni direktorijum
             shutil.rmtree(temp_dir)
 
             if package_name:
-                # Ako je naziv u formatu enigma2-plugin-extensions-<naziv>, uzmi samo poslednji deo
                 if package_name.startswith("enigma2-plugin-extensions-"):
                     package_name = package_name.replace("enigma2-plugin-extensions-", "")
                 logging.debug(f"Extracted package name: {package_name} from {ipk_path}")
@@ -466,75 +560,19 @@ class IPKInstaller(Screen):
                 shutil.rmtree(temp_dir)
             return None
 
-    def install_ipk(self):
-        """Install the selected IPK file."""
-        current_index = self["menu"].getSelectionIndex()
-        if current_index >= len(self.files) or self.files[current_index] == "No IPK or TAR.GZ files found":
-            self["status"].setText("No IPK file selected!")
-            return
-
-        file_entry = self.files[current_index]
-        if not file_entry.startswith("[IPK]"):
-            self["status"].setText("Selected file is not an IPK file!")
-            return
-
-        ipk_file = file_entry.replace("[IPK] ", "")
-        ipk_path = os.path.join("/tmp", ipk_file)
-        if not os.path.exists(ipk_path):
-            self["status"].setText(f"File {ipk_file} not found!")
-            logging.error(f"IPK file {ipk_path} not found")
-            return
-
-        # Izvuci naziv paketa pre instalacije
-        package_name = self.get_ipk_package_name(ipk_path)
-        if package_name:
-            self.current_package_name = package_name  # Sačuvaj za upis nakon instalacije
-        else:
-            # Fallback: koristi deo imena fajla bez verzije i ekstenzije
-            package_name = re.sub(r'[_-]\d+\.\d+\.\d+.*', '', ipk_file).replace('.ipk', '')
-            self.current_package_name = package_name
-            logging.warning(f"Using fallback package name: {package_name} for {ipk_file}")
-
-        self["status"].setText(f"Installing {ipk_file}...")
-        logging.debug(f"Installing IPK file: {ipk_path}")
-        install_command = f"opkg install {ipk_path}"
-        self.container.execute(install_command)
-
-    def install_tar_gz(self):
-        """Install the selected TAR.GZ file."""
-        current_index = self["menu"].getSelectionIndex()
-        if current_index >= len(self.files) or self.files[current_index] == "No IPK or TAR.GZ files found":
-            self["status"].setText("No TAR.GZ file selected!")
-            return
-
-        file_entry = self.files[current_index]
-        if not file_entry.startswith("[TAR.GZ]"):
-            self["status"].setText("Selected file is not a TAR.GZ file!")
-            return
-
-        tar_gz_file = file_entry.replace("[TAR.GZ] ", "")
-        tar_gz_path = os.path.join("/tmp", tar_gz_file)
-        if not os.path.exists(tar_gz_path):
-            self["status"].setText(f"File {tar_gz_file} not found!")
-            logging.error(f"TAR.GZ file {tar_gz_path} not found")
-            return
-
-        self["status"].setText(f"Extracting {tar_gz_file}...")
+    def install_tar_gz_file(self, tar_gz_path, tar_gz_file):
+        """Instaliraj TAR.GZ fajl (prilagođeno iz originalnog koda)."""
         logging.debug(f"Extracting TAR.GZ file: {tar_gz_path}")
         try:
-            # Kreiraj privremeni direktorijum ako ne postoji
             if os.path.exists(TEMP_EXTRACT_DIR):
                 shutil.rmtree(TEMP_EXTRACT_DIR)
             os.makedirs(TEMP_EXTRACT_DIR)
 
-            # Raspakuj tar.gz fajl
             with tarfile.open(tar_gz_path, "r:gz") as tar:
                 tar.extractall(path=TEMP_EXTRACT_DIR)
 
-            # Proveri da li postoji očekivana struktura
             extensions_path = os.path.join(TEMP_EXTRACT_DIR, "usr", "lib", "enigma2", "python", "Plugins", "Extensions")
             if os.path.exists(extensions_path):
-                # Pronađi naziv plugina
                 plugin_name = None
                 for item in os.listdir(extensions_path):
                     if os.path.isdir(os.path.join(extensions_path, item)):
@@ -542,41 +580,38 @@ class IPKInstaller(Screen):
                         break
 
                 if plugin_name:
-                    # Kopiraj Extensions direktorijum na sistemsku lokaciju
                     dest_path = os.path.join(EXTENSIONS_DIR, plugin_name)
                     if os.path.exists(dest_path):
                         shutil.rmtree(dest_path)
                     shutil.copytree(os.path.join(extensions_path, plugin_name), dest_path)
                     logging.debug(f"Copied plugin {plugin_name} to {dest_path}")
-
-                    # Loguj instalirani plugin
                     self.log_installed_plugin(plugin_name)
                     self["status"].setText(f"{tar_gz_file} installed successfully!")
                     self.session.open(MessageBox, f"The TAR.GZ {tar_gz_file} has been installed. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
+                    shutil.rmtree(TEMP_EXTRACT_DIR)
+                    self.current_install_index += 1
+                    self.install_next_file()
                 else:
                     self["status"].setText(f"No plugin directory found in {tar_gz_file}!")
                     logging.error(f"No plugin directory found in {extensions_path}")
+                    shutil.rmtree(TEMP_EXTRACT_DIR)
+                    self.current_install_index += 1
+                    self.install_next_file()
             else:
-                # Ako nema očekivane strukture, koristi tar xzvf -C /
-                self["status"].setText(f"Non-standard TAR.GZ, extracting to root...")
                 logging.warning(f"No Extensions directory found in {tar_gz_file}, using tar xzvf -C /")
                 self.container.execute(f"tar xzvf {tar_gz_path} -C /")
-                return  # Čekaj da se komanda završi pre osvežavanja liste
-
-            # Obriši privremeni direktorijum
-            shutil.rmtree(TEMP_EXTRACT_DIR)
-            # Osveži listu fajlova
-            self.files = self.load_files()
-            self["menu"].setList(self.files)
+                shutil.rmtree(TEMP_EXTRACT_DIR)
 
         except Exception as e:
             self["status"].setText(f"Error installing {tar_gz_file}: {str(e)}")
             logging.error(f"Error installing TAR.GZ {tar_gz_file}: {str(e)}")
             if os.path.exists(TEMP_EXTRACT_DIR):
                 shutil.rmtree(TEMP_EXTRACT_DIR)
+            self.current_install_index += 1
+            self.install_next_file()
 
     def log_installed_plugin(self, plugin_name):
-        """Log an installed plugin to the file."""
+        """Log an installed plugin to the file (preuzeto iz originalnog koda)."""
         try:
             plugin_dir = os.path.dirname(INSTALLED_PLUGINS_FILE)
             if not os.path.exists(plugin_dir):
@@ -598,36 +633,28 @@ class IPKInstaller(Screen):
 
     def install_finished(self, retval):
         """Handle completion of IPK or TAR.GZ installation."""
-        current_index = self["menu"].getSelectionIndex()
-        if current_index >= len(self.files) or self.files[current_index] == "No IPK or TAR.GZ files found":
-            self["status"].setText("No file selected!")
+        if self.current_install_index >= len(self.files_to_install):
             return
 
-        file_entry = self.files[current_index]
-        file_name = file_entry.replace("[IPK] ", "").replace("[TAR.GZ] ", "")
-        if file_entry.startswith("[IPK]"):
+        current_file = self.files_to_install[self.current_install_index]
+        if current_file.endswith(".ipk"):
             if retval == 0:
-                logging.debug(f"Successfully installed IPK: {file_name}")
-                self["status"].setText(f"{file_name} installed successfully!")
-                # Loguj naziv plugina iz .ipk fajla
+                logging.debug(f"Successfully installed IPK: {current_file}")
+                self["status"].setText(f"{current_file} installed successfully!")
                 if hasattr(self, 'current_package_name') and self.current_package_name:
                     self.log_installed_plugin(self.current_package_name)
-                self.session.open(MessageBox, f"The IPK {file_name} has been installed. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
+                self.session.open(MessageBox, f"The IPK {current_file} has been installed. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
             else:
-                logging.error(f"Error installing IPK {file_name}, retval: {retval}")
-                self["status"].setText(f"Error installing {file_name}! Check logs.")
-        elif file_entry.startswith("[TAR.GZ]"):
-            if retval == 0:
-                logging.debug(f"Successfully installed TAR.GZ: {file_name}")
-                self["status"].setText(f"{file_name} installed successfully!")
-                self.session.open(MessageBox, f"The TAR.GZ {file_name} has been installed. Please restart Enigma manually.", MessageBox.TYPE_INFO, timeout=10)
-            else:
-                logging.error(f"Error installing TAR.GZ {file_name}, retval: {retval}")
-                self["status"].setText(f"Error installing {file_name}! Check logs.")
+                logging.error(f"Error installing IPK {current_file}, retval: {retval}")
+                self["status"].setText(f"Error installing {current_file}! Check logs.")
+            self.current_install_index += 1
+            self.install_next_file()
+        elif current_file.endswith(".tar.gz"):
+            # TAR.GZ instalacija je već obrađena u install_tar_gz_file
+            pass
 
-        # Osveži listu fajlova
-        self.files = self.load_files()
-        self["menu"].setList(self.files)
+        self.load_files()  # Osveži listu fajlova
+        self["menu"].setList(self.file_display_list)
 
     def restart_enigma2(self):
         """Restart Enigma2."""
