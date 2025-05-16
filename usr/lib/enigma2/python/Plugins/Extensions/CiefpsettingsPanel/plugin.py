@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "3.8"
+PLUGIN_VERSION = "3.9"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -87,7 +87,7 @@ PLUGINS = {
     "HasBahCa": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/HasBahCa/installer.sh -qO - | /bin/sh",
     "PlutoTV": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/PlutoTV/installer.sh -qO - | /bin/sh",
     "Multistalker Pro": "wget -q --no-check-certificate https://dreambox4u.com/emilnabil237/plugins/MultiStalkerPro/installer.sh -O - | /bin/sh",
-    "Multistalker Pro 1.2 ATV": "wget https://raw.githubusercontent.com/Ham-ahmed/2125/refs/heads/main/multi-stalkerpro_Atv-py3.-12-8.sh -O - | /bin/sh",
+    "Multistalker Pro 1.2 ATV": "wget https://raw.githubusercontent.com/Ham-ahmed/2125/refs/heads/main/multi-stalkerpro_Atv-py3.-12-8.sh -O - | /bin/sh",  
     "############ ( Plugins ) ############": "", 
     "ONEupdater": "wget https://raw.githubusercontent.com/Sat-Club/ONEupdaterE2/main/installer.sh -O - | /bin/sh",
     "TV Addon": "wget https://dreambox4u.com/emilnabil237/plugins/tvaddon/installer.sh -O - | /bin/sh",
@@ -161,7 +161,6 @@ PLUGINS = {
     "Reboots Enigma2": "init 6",
     "Deep Standby": "init 0",
 }
-
 
 class CiefpPluginManager(Screen):
     skin = """
@@ -356,8 +355,8 @@ class CiefpPluginManager(Screen):
 
 class IPKInstaller(Screen):
     skin = """
-    <screen name="IPKInstaller" position="center,center" size="1600,800" title="..:: IPK and TAR.GZ Installer ::..">
-        <!-- Left part for the IPK and TAR.GZ file list -->
+    <screen name="IPKInstaller" position="center,center" size="1600,800" title="..:: IPK, TAR.GZ and SH Installer ::..">
+        <!-- Left part for the IPK, TAR.GZ and SH file list -->
         <widget name="menu" position="10,10" size="1080,650" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
         <!-- Right part for background image -->
         <widget name="background" position="1100,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
@@ -406,6 +405,7 @@ class IPKInstaller(Screen):
         self.container.appClosed.append(self.install_finished)
         self.current_install_index = 0
         self.files_to_install = []
+        self.current_package_name = None  # Inicijalizacija atributa
         self.update_status()
 
     def no_action(self):
@@ -413,17 +413,18 @@ class IPKInstaller(Screen):
         pass
 
     def load_files(self):
-        """Učitaj listu .ipk i .tar.gz fajlova iz /tmp direktorijuma."""
+        """Učitaj listu .ipk, .tar.gz i .sh fajlova iz /tmp direktorijuma."""
         self.files = []
         self.file_display_list = []
         self.selected_files.clear()
 
         ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
         tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
-        all_files = ipk_files + tar_gz_files
+        sh_files = [os.path.basename(f) for f in glob.glob("/tmp/*.sh") if os.path.isfile(f)]
+        all_files = ipk_files + tar_gz_files + sh_files
 
         if not all_files:
-            self.file_display_list = ["No IPK or TAR.GZ files found"]
+            self.file_display_list = ["No IPK, TAR.GZ or SH files found"]
             return
 
         self.files = all_files
@@ -502,6 +503,11 @@ class IPKInstaller(Screen):
             self.container.execute(install_command)
         elif current_file.endswith(".tar.gz"):
             self.install_tar_gz_file(file_path, current_file)
+        elif current_file.endswith(".sh"):
+            # Postavi fajl kao izvršiv i pokreni ga
+            os.chmod(file_path, 0o755)
+            install_command = f"bash {file_path}"
+            self.container.execute(install_command)
         else:
             logging.error(f"Unsupported file type: {current_file}")
             self["status"].setText(f"Unsupported file type: {current_file}")
@@ -637,7 +643,7 @@ class IPKInstaller(Screen):
             self["status"].setText(f"Error logging plugin {plugin_name}: {str(e)}")
 
     def install_finished(self, retval):
-        """Handle completion of IPK or TAR.GZ installation."""
+        """Handle completion of IPK, TAR.GZ or SH installation."""
         if self.current_install_index >= len(self.files_to_install):
             return
 
@@ -657,6 +663,16 @@ class IPKInstaller(Screen):
         elif current_file.endswith(".tar.gz"):
             # TAR.GZ instalacija je već obrađena u install_tar_gz_file
             pass
+        elif current_file.endswith(".sh"):
+            if retval == 0:
+                logging.debug(f"Successfully executed SH file: {current_file}")
+                self["status"].setText(f"{current_file} executed successfully!")
+                self.session.open(MessageBox, f"The SH file {current_file} has been executed. Please restart Enigma manually if required.", MessageBox.TYPE_INFO, timeout=10)
+            else:
+                logging.error(f"Error executing SH file {current_file}, retval: {retval}")
+                self["status"].setText(f"Error executing {current_file}! Check logs.")
+            self.current_install_index += 1
+            self.install_next_file()
 
         self.load_files()  # Osveži listu fajlova
         self["menu"].setList(self.file_display_list)
@@ -709,7 +725,7 @@ class CiefpsettingsPanel(Screen):
         self["key_red"] = Button("Red: Plugin Manager")
         self["key_green"] = Button("Green: Install Selected")
         self["key_blue"] = Button("Blue: Restart Enigma2")
-        self["key_yellow"] = Button("Yellow: IPK/TAR.GZ Installer")
+        self["key_yellow"] = Button("Yellow: IPK/TAR.GZ/SH Installer")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -893,12 +909,13 @@ class CiefpsettingsPanel(Screen):
         self.session.open(CiefpPluginManager)
 
     def open_ipk_installer(self):
-        """Open the IPK/TAR.GZ Installer screen if files are available."""
+        """Open the IPK/TAR.GZ/SH Installer screen if files are available."""
         ipk_files = glob.glob("/tmp/*.ipk")
         tar_gz_files = glob.glob("/tmp/*.tar.gz")
-        if not (ipk_files or tar_gz_files):
-            self["status"].setText("There are no IPK or TAR.GZ files available in /tmp")
-            logging.debug("No IPK or TAR.GZ files found in /tmp, skipping IPKInstaller screen")
+        sh_files = glob.glob("/tmp/*.sh")
+        if not (ipk_files or tar_gz_files or sh_files):
+            self["status"].setText("There are no IPK, TAR.GZ or SH files available in /tmp")
+            logging.debug("No IPK, TAR.GZ or SH files found in /tmp, skipping IPKInstaller screen")
             return
         self.session.open(IPKInstaller)
 
