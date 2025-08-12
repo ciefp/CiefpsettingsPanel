@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "4.6"
+PLUGIN_VERSION = "4.7"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -67,6 +67,7 @@ PLUGINS = {
     "CiefpTvTodayDE": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpTvTodayDE/main/installer.sh -O - | /bin/sh",
     "CiefpEPGshare ": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpEPGshare/main/installer.sh -O - | /bin/sh",
     "CiefpTvProgramSBB": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpTvProgramSBB/main/installer.sh -O - | /bin/sh",
+    "CiefpOscamEditor": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpOscamEditor/main/installer.sh -O - | /bin/sh",
     "############ ( Panels ) ############": "", 
     "Ciefp-Panel mod Emil Nabil": "wget -q --no-check-certificate https://github.com/emilnabil/download-plugins/raw/refs/heads/main/Ciefp-Panel/Ciefp-Panel.sh -O - | /bin/sh",
     "AjPanel": "wget https://raw.githubusercontent.com/biko-73/AjPanel/main/installer.sh -O - | /bin/sh",
