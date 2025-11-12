@@ -33,14 +33,6 @@ Tested and fully working on:
 - And many more...
 
 ---
-Category,Examples
-Ciefp Tools,"CiefpSettingsDownloader, CiefpBouquetUpdater, CiefpIPTVBouquets"
-Panels,"AjPanel, Linuxsat, Levi45Addons, EmilPanel, Tspanel"
-IPTV Players,"X-Streamity, JediMakerXtream, E2iPlayer, XCplugin, EStalker"
-Softcams,"Oscam, Ncam, CCcam, oscamicam"
-Skins,"Nitro FHD, MetrixFHD, BO-HLALA, Fury HD, XDREAMY"
-Tools & Utilities,"IP Audio Pro, OAWeather, FootOnSat, KeyAdder, SubsSupport"
-
 
 ### Preview
 
@@ -54,34 +46,104 @@ Tools & Utilities,"IP Audio Pro, OAWeather, FootOnSat, KeyAdder, SubsSupport"
 
 ```bash
 wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/installer.sh -O - | /bin/sh
+```
 
-After installation, restart Enigma2 (or reboot receiver).
-Find Ciefpsettings Panel in the plugin menu.
+> After installation, restart Enigma2 (or reboot receiver).  
+> Find **Ciefpsettings Panel** in the plugin menu.
 
+---
 
-Changelog
-v5.1 (12.11.2025)
+### Manual Installation (Advanced)
 
-Added persistent selection memory (remembers checked plugins)
-Improved plugin detection logic
-Better IPK package name extraction
-Enhanced TAR.GZ installation with fallback
-Fixed backup/restore during updates
-Added more panels and IPTV tools
-Improved logging system
+```bash
+opkg update
+opkg install python3-requests python3-json
+wget https://github.com/ciefp/CiefpsettingsPanel/archive/refs/heads/main.tar.gz -O /tmp/CiefpsettingsPanel.tar.gz
+tar -xzf /tmp/CiefpsettingsPanel.tar.gz -C /usr/lib/enigma2/python/Plugins/Extensions/
+rm /tmp/CiefpsettingsPanel.tar.gz
+```
 
+Then restart Enigma2.
 
-Credits
+---
 
-Main Developer: ciefp
-Special thanks: Emil Nabil, biko-73, fairbird, Belfagor2005, MOHAMED_OS, Ham-ahmed
-Community: LinuxSat, Enigma2 Forum, DreamElite
+### Update Plugin
 
+The panel **automatically checks for updates** on startup.  
+Or force update anytime:
+```bash
+wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/main/installer.sh -O - | /bin/sh
+```
 
-Support & Feedback
+---
+
+### Included Plugin Categories
+
+| Category                  | Examples |
+|---------------------------|---------|
+| **Ciefp Tools**           | CiefpSettingsDownloader, CiefpBouquetUpdater, CiefpIPTVBouquets |
+| **Panels**                | AjPanel, Linuxsat, Levi45Addons, EmilPanel, Tspanel |
+| **IPTV Players**          | X-Streamity, JediMakerXtream, E2iPlayer, XCplugin, EStalker |
+| **Softcams**              | Oscam, Ncam, CCcam, oscamicam |
+| **Skins**                 | Nitro FHD, MetrixFHD, BO-HLALA, Fury HD, XDREAMY |
+| **Tools & Utilities**     | IP Audio Pro, OAWeather, FootOnSat, KeyAdder, SubsSupport |
+
+---
+
+### File Locations
+
+- Plugin path: `/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/`
+- Installed list: `/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/ciefp_installed_plugins.txt`
+- Backup file: `/tmp/ciefp_installed_plugins_backup.txt`
+- Log file: `/tmp/ciefp_install.log`
+
+---
+
+### Safety & Notes
+
+- Cannot delete **CiefpsettingsPanel** itself
+- System plugins (OpenWebif, EPGImport, etc.) are **protected**
+- Always backup your settings before mass installation
+- Use **Blue button** → Restart Enigma2 after installations
+
+---
+
+### Changelog
+
+**v5.1** (12.11.2025)
+- Added persistent selection memory (remembers checked plugins)
+- Improved plugin detection logic
+- Better IPK package name extraction
+- Enhanced TAR.GZ installation with fallback
+- Fixed backup/restore during updates
+- Added more panels and IPTV tools
+- Improved logging system
+
+---
+
+### Credits
+
+- **Main Developer**: ciefp  
+- **Special thanks**: Emil Nabil, biko-73, fairbird, Belfagor2005, MOHAMED_OS, Ham-ahmed  
+- **Community**: LinuxSat, Enigma2 Forum, DreamElite
+
+---
+
+### Support & Feedback
+
 Having issues? Found a bug? Want to suggest a plugin?
-Open an Issue here on GitHub or contact us on:
 
-LinuxSat-Support Forum
-Telegram: ciefpsettings
-Facebook: ciefpsettings
+Open an **Issue** here on GitHub or contact us on:
+- [LinuxSat-Support Forum](https://www.linuxsat-support.com)
+- Telegram: ciefpsettings
+- Facebook: ciefpsettings
+
+---
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ciefp/CiefpsettingsPanel&type=Date)](https://star-history.com/#ciefp/CiefpsettingsPanel&Date)
+
+---
+
+**Your receiver deserves the best. Install Ciefpsettings Panel today!**
