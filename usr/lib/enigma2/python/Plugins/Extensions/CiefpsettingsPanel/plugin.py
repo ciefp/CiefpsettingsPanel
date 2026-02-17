@@ -102,7 +102,7 @@ PLUGINS = {
     "BouquetMakerXtream": "wget http://dreambox4u.com/emilnabil237/plugins/BouquetMakerXtream/installer.sh -O - | /bin/sh",
     "Archimede-M3UConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/Archimede-M3UConverter/main/installer.sh -O - | /bin/sh",  
     "StalkerPortalConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/StalkerPortalConverter/main/installer.sh -O - | /bin/sh",
-    "IPTV-Dream": "wget -q "--no-check-certificate" https://raw.githubusercontent.com/OliOli2013/IPTV-Dream-Plugin/main/installer.sh -O - | /bin/sh",
+    "IPTV-Dream": "wget -q --no-check-certificate https://raw.githubusercontent.com/OliOli2013/IPTV-Dream-Plugin/main/installer.sh -O - | /bin/sh",
     "Vavoo": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/Vavoo_Stream/online-setup | bash",
     "vavoo_1.15": "wget https://dreambox4u.com/emilnabil237/plugins/vavoo/installer.sh -O - | /bin/sh", 
     "Vavoo Maker": "wget https://raw.githubusercontent.com/Ham-ahmed/283/refs/heads/main/vavoo-maker_1.0.sh -O - | /bin/sh",
