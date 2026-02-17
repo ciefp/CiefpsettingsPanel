@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "5.8"
+PLUGIN_VERSION = "5.9"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -76,6 +76,7 @@ PLUGINS = {
     "CiefpParabolaCZ": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpParabolaCZ/main/installer.sh -O - | /bin/sh",
     "CiefpRottenTomatoes": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpRottenTomatoes/main/installer.sh -O - | /bin/sh",
     "CiefpOpenSubtitles": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpOpenSubtitles/main/installer.sh -O - | /bin/sh",
+    "CiefSRTplayer": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefSRTplayer/main/installer.sh -O - | /bin/sh",
     "TitloviBrowser": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/TitloviBrowser/main/installer.sh -O - | /bin/sh",
     "WebCamE2PrenjSF": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/WebCamE2PrenjSF/main/installer.sh -O - | /bin/sh",
     "############ ( Panels ) ############": "", 
@@ -101,6 +102,7 @@ PLUGINS = {
     "BouquetMakerXtream": "wget http://dreambox4u.com/emilnabil237/plugins/BouquetMakerXtream/installer.sh -O - | /bin/sh",
     "Archimede-M3UConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/Archimede-M3UConverter/main/installer.sh -O - | /bin/sh",  
     "StalkerPortalConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/StalkerPortalConverter/main/installer.sh -O - | /bin/sh",
+    "IPTV-Dream": "wget -q "--no-check-certificate" https://raw.githubusercontent.com/OliOli2013/IPTV-Dream-Plugin/main/installer.sh -O - | /bin/sh",
     "Vavoo": "wget -qO- --no-check-certificate https://gitlab.com/MOHAMED_OS/dz_store/-/raw/main/Vavoo_Stream/online-setup | bash",
     "vavoo_1.15": "wget https://dreambox4u.com/emilnabil237/plugins/vavoo/installer.sh -O - | /bin/sh", 
     "Vavoo Maker": "wget https://raw.githubusercontent.com/Ham-ahmed/283/refs/heads/main/vavoo-maker_1.0.sh -O - | /bin/sh",
@@ -189,6 +191,8 @@ PLUGINS = {
     "gstplayer": "opkg install gstplayer",
     "Streamlinksrv": "opkg install streamlinksrv",
     "dabstreamer": "opkg install dabstreamer",
+    "py3 requests": "opkg install python3-requests",
+    "py3 Bs4": "opkg install python3-beautifulsoup4",
     "eti_tools": "opkg install eti-tools",
     "dvbsnoop": "opkg install dvbsnoop",
     "stop enigma2 and network": "init 1",
