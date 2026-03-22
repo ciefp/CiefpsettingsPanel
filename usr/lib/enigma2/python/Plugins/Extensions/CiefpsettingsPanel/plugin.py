@@ -16,6 +16,7 @@ import re
 import shutil
 import glob
 import tarfile
+import subprocess
 
 # Postavljanje logovanja
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
@@ -460,9 +461,15 @@ class IPKInstaller(Screen):
         self.file_display_list = []
         self.selected_files.clear()
 
-        ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
-        tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
-        sh_files = [os.path.basename(f) for f in glob.glob("/tmp/*.sh") if os.path.isfile(f)]
+        # Zaštita od glob greške kada je /tmp preopterećen
+        try:
+            ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
+            tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
+            sh_files = [os.path.basename(f) for f in glob.glob("/tmp/*.sh") if os.path.isfile(f)]
+        except Exception as e:
+            logging.error(f"Glob error in load_files: {str(e)}")
+            ipk_files = tar_gz_files = sh_files = []
+
         all_files = ipk_files + tar_gz_files + sh_files
 
         if not all_files:
@@ -501,15 +508,14 @@ class IPKInstaller(Screen):
             self["status"].setText(f"{count} files selected")
 
     def start_installation(self):
-        """Start installing selected plugins one by one."""
-        if not self.selected_plugins:
-            self["status"].setText("No plugins selected!")
+        """Start installing selected files one by one."""
+        if not self.selected_files:
+            self["status"].setText("No files selected!")
             return
 
-        self.plugins_to_install = list(self.selected_plugins)
+        self.files_to_install = list(self.selected_files)
         self.current_install_index = 0
-        self.installed_plugins.clear()  # Resetuj listu instaliranih plugina
-        self.install_next_plugin()
+        self.install_next_file()
 
     def install_next_file(self):
         """Instaliraj sledeći fajl u redu."""
@@ -534,15 +540,18 @@ class IPKInstaller(Screen):
             return
 
         if current_file.endswith(".ipk"):
-            self.current_package_name = None
+            # Prvo probamo da dobijemo tačno ime paketa
             package_name = self.get_ipk_package_name(file_path)
-            if package_name:
-                self.current_package_name = package_name
-            else:
+
+            # Ako nije uspelo, koristimo fallback iz imena fajla
+            if not package_name:
                 package_name = re.sub(r'[_-]\d+\.\d+\.\d+.*', '', current_file).replace('.ipk', '')
-                self.current_package_name = package_name
-                logging.warning(f"Using fallback package name: {package_name} for {current_file}")
-            install_command = f"opkg install {file_path}"
+                logging.info(f"Using fallback package name: {package_name} for {current_file}")
+
+            self.current_package_name = package_name
+
+            # VAŽNO: dodajemo --force-overwrite jer većina novih IPK-ova (Estalker, XCplugin...) ima konflikt
+            install_command = f"opkg install --force-overwrite {file_path}"
             self.container.execute(install_command)
         elif current_file.endswith(".tar.gz"):
             self.install_tar_gz_file(file_path, current_file)
@@ -558,60 +567,27 @@ class IPKInstaller(Screen):
             self.install_next_file()
 
     def get_ipk_package_name(self, ipk_path):
-        """Izvuci naziv paketa iz IPK fajla (preuzeto iz originalnog koda)."""
+        """Izvlači tačno ime paketa iz IPK fajla pomoću 'opkg info' (radi sa zstd, xz, gz...)."""
         try:
-            temp_dir = "/tmp/ipk_extract/"
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
-            os.makedirs(temp_dir)
+            result = subprocess.run(
+                ["opkg", "info", ipk_path],
+                capture_output=True, text=True, check=False
+            )
 
-            with tarfile.open(ipk_path, "r:*") as tar:
-                tar.extractall(path=temp_dir)
-
-            control_tar = None
-            for root, _, files in os.walk(temp_dir):
-                for f in files:
-                    if f == "control.tar.gz":
-                        control_tar = os.path.join(root, f)
-                        break
-                if control_tar:
-                    break
-
-            if not control_tar:
-                logging.warning(f"No control.tar.gz found in {ipk_path}")
-                return None
-
-            with tarfile.open(control_tar, "r:gz") as control:
-                control.extractall(path=temp_dir)
-
-            control_file = os.path.join(temp_dir, "control")
-            if not os.path.exists(control_file):
-                logging.warning(f"No control file found in {ipk_path}")
-                shutil.rmtree(temp_dir)
-                return None
-
-            package_name = None
-            with open(control_file, "r") as f:
-                for line in f:
-                    if line.startswith("Package:"):
-                        package_name = line.split(":", 1)[1].strip()
-                        break
-
-            shutil.rmtree(temp_dir)
-
-            if package_name:
-                if package_name.startswith("enigma2-plugin-extensions-"):
-                    package_name = package_name.replace("enigma2-plugin-extensions-", "")
-                logging.debug(f"Extracted package name: {package_name} from {ipk_path}")
-                return package_name
-            else:
-                logging.warning(f"No Package field found in control file for {ipk_path}")
-                return None
-
+            for line in result.stdout.splitlines():
+                if line.startswith("Package:"):
+                    pkg = line.split(":", 1)[1].strip()
+                    # Uklanjamo prefiks da dobijemo čisto ime foldera
+                    if pkg.startswith("enigma2-plugin-extensions-"):
+                        pkg = pkg.replace("enigma2-plugin-extensions-", "")
+                    elif pkg.startswith("enigma2-plugin-"):
+                        pkg = pkg.replace("enigma2-plugin-", "")
+                    logging.debug(f"Extracted real package name: {pkg} from {ipk_path}")
+                    return pkg
+            # Ako opkg info nije dao ništa (veoma retko)
+            return None
         except Exception as e:
-            logging.error(f"Error extracting package name from {ipk_path}: {str(e)}")
-            if os.path.exists(temp_dir):
-                shutil.rmtree(temp_dir)
+            logging.error(f"opkg info failed for {ipk_path}: {str(e)}")
             return None
 
     def install_tar_gz_file(self, tar_gz_path, tar_gz_file):
