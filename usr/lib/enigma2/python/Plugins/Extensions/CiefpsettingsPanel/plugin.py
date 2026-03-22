@@ -21,7 +21,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "5.9"
+PLUGIN_VERSION = "6.0"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -501,14 +501,15 @@ class IPKInstaller(Screen):
             self["status"].setText(f"{count} files selected")
 
     def start_installation(self):
-        """Pokreni instalaciju selektovanih fajlova."""
-        if not self.selected_files:
-            self["status"].setText("No files selected!")
+        """Start installing selected plugins one by one."""
+        if not self.selected_plugins:
+            self["status"].setText("No plugins selected!")
             return
 
-        self.files_to_install = list(self.selected_files)
+        self.plugins_to_install = list(self.selected_plugins)
         self.current_install_index = 0
-        self.install_next_file()
+        self.installed_plugins.clear()  # Resetuj listu instaliranih plugina
+        self.install_next_plugin()
 
     def install_next_file(self):
         """Instaliraj sledeći fajl u redu."""
@@ -905,16 +906,64 @@ class CiefpsettingsPanel(Screen):
         if self.current_install_index >= len(self.plugins_to_install):
             self["status"].setText("All installations complete!")
             logging.debug(f"All installations complete, installed_plugins: {self.installed_plugins}")
-            self.clear_selections()
+
+            # Pitaj korisnika da li želi restart
+            if self.installed_plugins:
+                self.session.openWithCallback(
+                    self.final_restart,
+                    MessageBox,
+                    "All plugins installed. Restart Enigma2 now?",
+                    MessageBox.TYPE_YESNO
+                )
+            else:
+                self.clear_selections()
             return
 
         plugin = self.plugins_to_install[self.current_install_index]
-        self["status"].setText(f"Installing {plugin} ({self.current_install_index + 1}/{len(self.plugins_to_install)})...")
+        is_last = (self.current_install_index == len(self.plugins_to_install) - 1)
+
+        self["status"].setText(
+            f"Installing {plugin} ({self.current_install_index + 1}/{len(self.plugins_to_install)})...")
         logging.debug(f"Executing command for plugin: {plugin}")
-        self.container.execute(PLUGINS[plugin])
+
+        # Kreiraj wrapper skriptu za instalaciju
+        install_script = self.create_temp_install_script(plugin, is_last)
+        self.container.execute(f"bash {install_script}")
 
     def command_finished(self, retval):
         """Handle completion of a plugin installation."""
+        if self.current_install_index >= len(self.plugins_to_install):
+            return
+
+        current_plugin = self.plugins_to_install[self.current_install_index]
+        logging.debug(f"Installation finished for plugin {current_plugin}, return value: {retval}")
+        folder_name = self.find_plugin_folder(current_plugin)
+        package_installed = False
+
+        # Provera da li je paket instaliran (za opkg ili dpkg)
+        if folder_name:
+            if os.system(f"opkg list-installed | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
+                package_installed = True
+            elif os.system(f"dpkg -l | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
+                package_installed = True
+
+        if retval == 0 and (folder_name or package_installed):
+            logging.debug(f"Plugin {current_plugin} successfully installed in folder {folder_name or 'unknown'}")
+            self.installed_plugins.add(current_plugin)
+            self.current_install_index += 1
+            self.install_next_plugin()
+        else:
+            logging.warning(f"Plugin {current_plugin} not found in {EXTENSIONS_DIR} or not installed, retval: {retval}")
+            self["status"].setText(f"Plugin {current_plugin} not installed properly!")
+            self.remove_plugin_from_file(current_plugin)
+            self.current_install_index += 1
+            self.install_next_plugin()
+
+    def command_finished(self, retval):
+        """Handle completion of a plugin installation."""
+        if self.current_install_index >= len(self.plugins_to_install):
+            return
+
         current_plugin = self.plugins_to_install[self.current_install_index]
         logging.debug(f"Installation finished for plugin {current_plugin}, return value: {retval}")
         folder_name = self.find_plugin_folder(current_plugin)
@@ -946,6 +995,43 @@ class CiefpsettingsPanel(Screen):
         self["menu"].setList(self.plugin_display_list)
         self.update_status()
 
+    def create_temp_install_script(self, plugin, is_last):
+        """Kreira privremenu skriptu za instalaciju sa SKIP_REBOOT varijablom."""
+        script_path = f"/tmp/install_{plugin.replace(' ', '_').replace('/', '_')}.sh"
+        
+        # Dobij originalnu komandu
+        original_command = PLUGINS[plugin]
+        
+        script_content = f'''#!/bin/sh
+# Instalacija {plugin}
+# Batch installation mode
+if [ "{str(is_last).lower()}" = "true" ]; then
+    export SKIP_REBOOT=0
+    echo "Last plugin in queue - restart will be performed after installation"
+else
+    export SKIP_REBOOT=1
+    echo "Skipping restart for {plugin} (batch installation)"
+fi
+
+# Pokreni originalnu instalaciju
+{original_command}
+
+# Očisti ovu skriptu nakon izvršenja
+rm -f "$0"
+'''
+        
+        with open(script_path, 'w') as f:
+            f.write(script_content)
+        
+        os.chmod(script_path, 0o755)
+        return script_path
+
+    def final_restart(self, answer):
+        """Konačni restart nakon svih instalacija."""
+        if answer:
+            self["status"].setText("Restarting Enigma2...")
+            self.container.execute("init 4 && init 3")
+            self.close()
     def open_plugin_manager(self):
         """Open the Plugin Manager screen."""
         self.session.open(CiefpPluginManager)
