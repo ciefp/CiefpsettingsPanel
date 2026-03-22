@@ -928,6 +928,12 @@ class CiefpsettingsPanel(Screen):
 
         # Kreiraj wrapper skriptu za instalaciju
         install_script = self.create_temp_install_script(plugin, is_last)
+
+        # Kreiraj novi container za svaku instalaciju
+        self.container = eConsoleAppContainer()
+        self.container.appClosed.append(self.command_finished)
+
+        # Pokreni instalaciju
         self.container.execute(f"bash {install_script}")
 
     def command_finished(self, retval):
@@ -937,6 +943,11 @@ class CiefpsettingsPanel(Screen):
 
         current_plugin = self.plugins_to_install[self.current_install_index]
         logging.debug(f"Installation finished for plugin {current_plugin}, return value: {retval}")
+
+        # Dodaj mali delay da se proces potpuno završi
+        import time
+        time.sleep(2)
+
         folder_name = self.find_plugin_folder(current_plugin)
         package_installed = False
 
@@ -951,42 +962,19 @@ class CiefpsettingsPanel(Screen):
             logging.debug(f"Plugin {current_plugin} successfully installed in folder {folder_name or 'unknown'}")
             self.installed_plugins.add(current_plugin)
             self.current_install_index += 1
-            self.install_next_plugin()
+            # Koristi timer za sledeću instalaciju
+            self.install_timer = eTimer()
+            self.install_timer.callback.append(self.install_next_plugin)
+            self.install_timer.start(1000, True)  # 1 sekunda delay
         else:
             logging.warning(f"Plugin {current_plugin} not found in {EXTENSIONS_DIR} or not installed, retval: {retval}")
             self["status"].setText(f"Plugin {current_plugin} not installed properly!")
             self.remove_plugin_from_file(current_plugin)
             self.current_install_index += 1
-            self.install_next_plugin()
-
-    def command_finished(self, retval):
-        """Handle completion of a plugin installation."""
-        if self.current_install_index >= len(self.plugins_to_install):
-            return
-
-        current_plugin = self.plugins_to_install[self.current_install_index]
-        logging.debug(f"Installation finished for plugin {current_plugin}, return value: {retval}")
-        folder_name = self.find_plugin_folder(current_plugin)
-        package_installed = False
-
-        # Provera da li je paket instaliran (za opkg ili dpkg)
-        if folder_name:
-            if os.system(f"opkg list-installed | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
-                package_installed = True
-            elif os.system(f"dpkg -l | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
-                package_installed = True
-
-        if retval == 0 and (folder_name or package_installed):
-            logging.debug(f"Plugin {current_plugin} successfully installed in folder {folder_name or 'unknown'}")
-            self.installed_plugins.add(current_plugin)
-            self.current_install_index += 1
-            self.install_next_plugin()
-        else:
-            logging.warning(f"Plugin {current_plugin} not found in {EXTENSIONS_DIR} or not installed, retval: {retval}")
-            self["status"].setText(f"Plugin {current_plugin} not installed properly!")
-            self.remove_plugin_from_file(current_plugin)
-            self.current_install_index += 1
-            self.install_next_plugin()
+            # Koristi timer za sledeću instalaciju
+            self.install_timer = eTimer()
+            self.install_timer.callback.append(self.install_next_plugin)
+            self.install_timer.start(1000, True)  # 1 sekunda delay
 
     def clear_selections(self):
         """Clear selections and reset display."""
