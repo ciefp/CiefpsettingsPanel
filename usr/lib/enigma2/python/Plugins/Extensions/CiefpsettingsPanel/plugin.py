@@ -1,13 +1,16 @@
 from Plugins.Plugin import PluginDescriptor
 from Screens.Screen import Screen
 from Screens.MessageBox import MessageBox
+from Screens.ChoiceBox import ChoiceBox  # DODAJ OVO
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 from Components.Button import Button
 from Components.Pixmap import Pixmap
+from Components.ProgressBar import ProgressBar
 from enigma import eConsoleAppContainer
 from enigma import eTimer
+import time
 import urllib.request
 import json
 import os
@@ -16,7 +19,6 @@ import re
 import shutil
 import glob
 import tarfile
-import subprocess
 
 # Postavljanje logovanja
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
@@ -53,7 +55,7 @@ PLUGINS = {
     "CiefpBouquetUpdater": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpBouquetUpdater/main/installer.sh -O - | /bin/sh",
     "CiefpChannelManager": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpChannelManager/main/installer.sh -O - | /bin/sh",
     "CiefpE2Converter": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpE2Converter/main/installer.sh -O - | /bin/sh",
-    "CiefpSatellitesXmlEditor": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSatelliteXmlEditor/main/installer.sh -O - | /bin/sh",
+    "CiefpSatelliteXmlEditor": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSatelliteXmlEditor/main/installer.sh -O - | /bin/sh",
     "CiefpIPTVBouquets": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpIPTVBouquets/main/installer.sh -O - | /bin/sh",
     "CiefpWhitelistStreamrelay": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpWhitelistStreamrelay/main/installer.sh -O - | /bin/sh",
     "CiefpSettingsStreamrelay PY3": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSettingsStreamrelay/main/installer.sh -O - | /bin/sh",
@@ -226,9 +228,9 @@ class CiefpPluginManager(Screen):
         self["menu"] = MenuList(self.installed_plugins)
         self["background"] = Pixmap()
         self["status"] = Label("Select a plugin with OK or Green, delete with Red")
-        self["key_red"] = Button("Red: Delete")
-        self["key_green"] = Button("Green: Select")
-        self["key_blue"] = Button("Blue: Restart Enigma2")
+        self["key_red"] = Button("Delete")
+        self["key_green"] = Button("Select")
+        self["key_blue"] = Button("Restart Enigma2")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -428,10 +430,10 @@ class IPKInstaller(Screen):
         self["menu"] = MenuList(self.file_display_list)
         self["background"] = Pixmap()
         self["status"] = Label("Select files with OK, install with Green")
-        self["key_red"] = Button("Red: Exit")
-        self["key_green"] = Button("Green: Install Selected")
+        self["key_red"] = Button("Exit")
+        self["key_green"] = Button("Install Selected")
         self["key_yellow"] = Button("Yellow: --")  # Može se ukloniti ili iskoristiti
-        self["key_blue"] = Button("Blue: Restart Enigma2")
+        self["key_blue"] = Button("Restart Enigma2")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -462,15 +464,9 @@ class IPKInstaller(Screen):
         self.file_display_list = []
         self.selected_files.clear()
 
-        # Zaštita od glob greške kada je /tmp preopterećen
-        try:
-            ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
-            tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
-            sh_files = [os.path.basename(f) for f in glob.glob("/tmp/*.sh") if os.path.isfile(f)]
-        except Exception as e:
-            logging.error(f"Glob error in load_files: {str(e)}")
-            ipk_files = tar_gz_files = sh_files = []
-
+        ipk_files = [os.path.basename(f) for f in glob.glob("/tmp/*.ipk") if os.path.isfile(f)]
+        tar_gz_files = [os.path.basename(f) for f in glob.glob("/tmp/*.tar.gz") if os.path.isfile(f)]
+        sh_files = [os.path.basename(f) for f in glob.glob("/tmp/*.sh") if os.path.isfile(f)]
         all_files = ipk_files + tar_gz_files + sh_files
 
         if not all_files:
@@ -541,18 +537,15 @@ class IPKInstaller(Screen):
             return
 
         if current_file.endswith(".ipk"):
-            # Prvo probamo da dobijemo tačno ime paketa
+            self.current_package_name = None
             package_name = self.get_ipk_package_name(file_path)
-
-            # Ako nije uspelo, koristimo fallback iz imena fajla
-            if not package_name:
+            if package_name:
+                self.current_package_name = package_name
+            else:
                 package_name = re.sub(r'[_-]\d+\.\d+\.\d+.*', '', current_file).replace('.ipk', '')
-                logging.info(f"Using fallback package name: {package_name} for {current_file}")
-
-            self.current_package_name = package_name
-
-            # VAŽNO: dodajemo --force-overwrite jer većina novih IPK-ova (Estalker, XCplugin...) ima konflikt
-            install_command = f"opkg install --force-overwrite {file_path}"
+                self.current_package_name = package_name
+                logging.warning(f"Using fallback package name: {package_name} for {current_file}")
+            install_command = f"opkg install {file_path}"
             self.container.execute(install_command)
         elif current_file.endswith(".tar.gz"):
             self.install_tar_gz_file(file_path, current_file)
@@ -568,27 +561,60 @@ class IPKInstaller(Screen):
             self.install_next_file()
 
     def get_ipk_package_name(self, ipk_path):
-        """Izvlači tačno ime paketa iz IPK fajla pomoću 'opkg info' (radi sa zstd, xz, gz...)."""
+        """Izvuci naziv paketa iz IPK fajla (preuzeto iz originalnog koda)."""
         try:
-            result = subprocess.run(
-                ["opkg", "info", ipk_path],
-                capture_output=True, text=True, check=False
-            )
+            temp_dir = "/tmp/ipk_extract/"
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+            os.makedirs(temp_dir)
 
-            for line in result.stdout.splitlines():
-                if line.startswith("Package:"):
-                    pkg = line.split(":", 1)[1].strip()
-                    # Uklanjamo prefiks da dobijemo čisto ime foldera
-                    if pkg.startswith("enigma2-plugin-extensions-"):
-                        pkg = pkg.replace("enigma2-plugin-extensions-", "")
-                    elif pkg.startswith("enigma2-plugin-"):
-                        pkg = pkg.replace("enigma2-plugin-", "")
-                    logging.debug(f"Extracted real package name: {pkg} from {ipk_path}")
-                    return pkg
-            # Ako opkg info nije dao ništa (veoma retko)
-            return None
+            with tarfile.open(ipk_path, "r:*") as tar:
+                tar.extractall(path=temp_dir)
+
+            control_tar = None
+            for root, _, files in os.walk(temp_dir):
+                for f in files:
+                    if f == "control.tar.gz":
+                        control_tar = os.path.join(root, f)
+                        break
+                if control_tar:
+                    break
+
+            if not control_tar:
+                logging.warning(f"No control.tar.gz found in {ipk_path}")
+                return None
+
+            with tarfile.open(control_tar, "r:gz") as control:
+                control.extractall(path=temp_dir)
+
+            control_file = os.path.join(temp_dir, "control")
+            if not os.path.exists(control_file):
+                logging.warning(f"No control file found in {ipk_path}")
+                shutil.rmtree(temp_dir)
+                return None
+
+            package_name = None
+            with open(control_file, "r") as f:
+                for line in f:
+                    if line.startswith("Package:"):
+                        package_name = line.split(":", 1)[1].strip()
+                        break
+
+            shutil.rmtree(temp_dir)
+
+            if package_name:
+                if package_name.startswith("enigma2-plugin-extensions-"):
+                    package_name = package_name.replace("enigma2-plugin-extensions-", "")
+                logging.debug(f"Extracted package name: {package_name} from {ipk_path}")
+                return package_name
+            else:
+                logging.warning(f"No Package field found in control file for {ipk_path}")
+                return None
+
         except Exception as e:
-            logging.error(f"opkg info failed for {ipk_path}: {str(e)}")
+            logging.error(f"Error extracting package name from {ipk_path}: {str(e)}")
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
             return None
 
     def install_tar_gz_file(self, tar_gz_path, tar_gz_file):
@@ -701,33 +727,30 @@ class IPKInstaller(Screen):
         """Restart Enigma2."""
         self.container.execute("init 4 && init 3")
         self.close()
-
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="1600,800" title="..:: Ciefpsettings Panel ::.. (Version{version})">
-        <!-- Left 50% of the screen for the menu -->
+    <screen name="CiefpsettingsPanel" position="center,center" size="1600,900" title="..:: Ciefpsettings Panel ::.. (Version{version})">
+        <!-- Left part for the menu -->
         <widget name="menu" position="10,10" size="790,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
 
-        <!-- Right 50% of the screen for background image and buttons -->
+        <!-- Right part for background image -->
         <widget name="background" position="800,0" size="800,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
 
         <!-- Status at the bottom left -->
-        <widget name="status" position="10,720" size="790,30" transparent="1" font="Regular;22" halign="center" />
+        <widget name="status" position="10,740" size="790,30" transparent="1" font="Regular;22" halign="center" />
 
-        <!-- Yellow button below the status message on the left -->
-        <widget name="key_red" position="10,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <!-- Progress bar - cela dužina iznad dugmića -->
+        <widget name="progress_bar" position="10,790" size="1580,20" backgroundColor="#333333" foregroundColor="#1F771F" borderWidth="1" />
+        <widget name="progress_text" position="10,815" size="1580,25" font="Regular;20" halign="center" />
 
-        <!-- Green button on the right side -->
-        <widget name="key_green" position="400,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-
-        <!-- Red button on the right side -->
-        <widget name="key_yellow" position="800,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-
-        <!-- Blue button on the right side -->
-        <widget name="key_blue" position="1200,760" size="400,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <!-- Buttons -->
+        <widget name="key_red" position="10,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_green" position="410,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_yellow" position="810,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_blue" position="1210,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """.format(version=PLUGIN_VERSION)
-
+    
     def __init__(self, session):
         self.session = session
         Screen.__init__(self, session)
@@ -735,17 +758,25 @@ class CiefpsettingsPanel(Screen):
         self.selected_plugins = set()
         self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
         self.current_install_index = 0
-        self.installed_plugins = set()  # Privremena lista za praćenje uspešno instaliranih plugina
+        self.installed_plugins = set()  # Lista uspešno instaliranih
+        self.failed_plugins = set()  # DODAJ - Lista neuspelih plugina
+        self.start_time = None  # DODAJ - Vreme početka instalacije
+        self.pending_plugin = None      # DODAJ OVO
+        self.pending_retval = None      # DODAJ OVO
         self.version_check_in_progress = False
         self.version_buffer = b''
 
         self["menu"] = MenuList(self.plugin_display_list)
         self["background"] = Pixmap()
         self["status"] = Label("Select plugins with OK, install with Green")
-        self["key_red"] = Button("Red: Plugin Manager")
-        self["key_green"] = Button("Green: Install Selected")
-        self["key_blue"] = Button("Blue: Restart Enigma2")
-        self["key_yellow"] = Button("Yellow: IPK/TAR.GZ/SH Installer")
+        self["key_red"] = Button("Plugin Manager")
+        self["key_green"] = Button("Install Selected")
+        self["key_blue"] = Button("Restart Enigma2")
+        self["key_yellow"] = Button("IPK/TAR.GZ/SH Installer")
+
+        # DODAJ - Progress bar widgeti
+        self["progress_bar"] = ProgressBar()
+        self["progress_text"] = Label("")
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -766,7 +797,7 @@ class CiefpsettingsPanel(Screen):
         # Automatska provera verzije pri pokretanju
         self.check_version_timer = eTimer()
         self.check_version_timer.callback.append(self.check_for_updates)
-        self.check_version_timer.start(1000, True)  # Pokreni proveru nakon 1 sekunde
+        self.check_version_timer.start(1000, True)
 
     def toggle_selection(self):
         """Toggle selection of the current plugin and log it immediately."""
@@ -872,29 +903,49 @@ class CiefpsettingsPanel(Screen):
             self["status"].setText("No plugins selected!")
             return
 
+        # DODAJ - Zabeleži vreme početka
+        self.start_time = time.time()
+
         self.plugins_to_install = list(self.selected_plugins)
         self.current_install_index = 0
-        self.installed_plugins.clear()  # Resetuj listu instaliranih plugina
+        self.installed_plugins.clear()
+        self.failed_plugins.clear()  # DODAJ - Resetuj listu neuspelih
+
+        # DODAJ - Prikaži progress bar
+        self["progress_bar"].setValue(0)
+        self["progress_text"].setText(f"0/{len(self.plugins_to_install)} (0%)")
+
         self.install_next_plugin()
 
+    def update_progress(self):
+        """Ažuriraj progress bar tokom instalacije"""
+        total = len(self.plugins_to_install)
+        current = self.current_install_index
+        if total > 0:
+            percent = int((current / total) * 100)
+            self["progress_bar"].setValue(percent)
+            self["progress_text"].setText(f"{current}/{total} ({percent}%)")
+            
     def install_next_plugin(self):
         """Install the next plugin in the queue."""
         logging.debug(f"Installing plugin {self.current_install_index + 1}/{len(self.plugins_to_install)}")
+
+        # Ažuriraj progress bar
+        self.update_progress()
+
         if self.current_install_index >= len(self.plugins_to_install):
             self["status"].setText("All installations complete!")
             logging.debug(f"All installations complete, installed_plugins: {self.installed_plugins}")
-
-            # Pitaj korisnika da li želi restart
-            if self.installed_plugins:
-                self.session.openWithCallback(
-                    self.final_restart,
-                    MessageBox,
-                    "All plugins installed. Restart Enigma2 now?",
-                    MessageBox.TYPE_YESNO
-                )
-            else:
-                self.clear_selections()
+            self.show_installation_summary()
             return
+
+        # Proveri da li je prethodni container još aktivan
+        if hasattr(self, 'container') and self.container:
+            try:
+                # Pokušaj da se oslobodi stari container
+                self.container = None
+            except:
+                pass
 
         plugin = self.plugins_to_install[self.current_install_index]
         is_last = (self.current_install_index == len(self.plugins_to_install) - 1)
@@ -906,52 +957,189 @@ class CiefpsettingsPanel(Screen):
         # Kreiraj wrapper skriptu za instalaciju
         install_script = self.create_temp_install_script(plugin, is_last)
 
+        # Proveri da li skripta postoji
+        if not os.path.exists(install_script):
+            logging.error(f"Install script not created: {install_script}")
+            self["status"].setText(f"Error: Could not create install script for {plugin}")
+            self.current_install_index += 1
+            self.install_timer = eTimer()
+            self.install_timer.callback.append(self.install_next_plugin)
+            self.install_timer.start(3000, True)
+            return
+
         # Kreiraj novi container za svaku instalaciju
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
 
         # Pokreni instalaciju
+        logging.debug(f"Executing: bash {install_script}")
         self.container.execute(f"bash {install_script}")
+
+    def show_installation_summary(self):
+        """Prikaži summary instalacije sa vremenom trajanja"""
+        # Izračunaj vreme trajanja
+        elapsed = 0
+        if self.start_time:
+            elapsed = int(time.time() - self.start_time)
+        minutes = elapsed // 60
+        seconds = elapsed % 60
+
+        # Kreiraj summary poruku
+        summary = f"Installation completed in {minutes}:{seconds:02d}!\n\n"
+        summary += f"✓ Successfully installed: {len(self.installed_plugins)}/{len(self.plugins_to_install)}\n"
+
+        if self.failed_plugins:
+            summary += f"✗ Failed: {len(self.failed_plugins)}\n\n"
+            summary += "Failed plugins:\n"
+            for plugin in self.failed_plugins:
+                summary += f"  • {plugin}\n"
+
+        if self.installed_plugins:
+            summary += f"\n✓ Installed plugins ({len(self.installed_plugins)}):\n"
+            # Prikaži samo prvih 10 ako ima puno
+            plugins_list = list(self.installed_plugins)[:10]
+            for plugin in plugins_list:
+                summary += f"  • {plugin}\n"
+            if len(self.installed_plugins) > 10:
+                summary += f"  ... and {len(self.installed_plugins) - 10} more\n"
+
+        # Sačuvaj summary u log fajl
+        self.log_installation_summary()
+
+        # Prikaži summary korisniku
+        if self.installed_plugins:
+            self.session.openWithCallback(
+                self.final_restart,
+                MessageBox,
+                summary,
+                MessageBox.TYPE_INFO,
+                timeout=15
+            )
+        else:
+            self.session.open(MessageBox, summary, MessageBox.TYPE_INFO, timeout=10)
+            self.clear_selections()
+
+    def log_installation_summary(self):
+        """Loguj summary instalacije u fajl"""
+        log_file = "/tmp/ciefp_install_summary.txt"
+        try:
+            with open(log_file, 'w') as f:
+                f.write("=== CiefpSettingsPanel Installation Summary ===\n")
+                f.write(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Total plugins: {len(self.plugins_to_install)}\n")
+                f.write(f"Successfully installed: {len(self.installed_plugins)}\n")
+                f.write(f"Failed: {len(self.failed_plugins)}\n\n")
+
+                if self.installed_plugins:
+                    f.write("✓ SUCCESSFUL:\n")
+                    for p in sorted(self.installed_plugins):
+                        f.write(f"  • {p}\n")
+
+                if self.failed_plugins:
+                    f.write("\n✗ FAILED:\n")
+                    for p in sorted(self.failed_plugins):
+                        f.write(f"  • {p}\n")
+
+            logging.info(f"Installation summary saved to {log_file}")
+        except Exception as e:
+            logging.error(f"Error saving summary: {e}")
 
     def command_finished(self, retval):
         """Handle completion of a plugin installation."""
+        import datetime
+
         if self.current_install_index >= len(self.plugins_to_install):
             return
 
         current_plugin = self.plugins_to_install[self.current_install_index]
-        logging.debug(f"Installation finished for plugin {current_plugin}, return value: {retval}")
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        logging.debug(f"[{current_time}] Installation finished for plugin {current_plugin}, return value: {retval}")
 
-        # Dodaj mali delay da se proces potpuno završi
-        import time
-        time.sleep(2)
+        # NE KORISTI time.sleep() - to blokira Enigma2!
+        # Umesto toga, koristi eTimer za asinhrono čekanje
+
+        # Sačuvaj podatke za kasniju proveru
+        self.pending_plugin = current_plugin
+        self.pending_retval = retval
+
+        # Pokreni timer za proveru instalacije (3 sekunde delay)
+        self.check_timer = eTimer()
+        self.check_timer.callback.append(self.check_installation)
+        self.check_timer.start(3000, True)  # 3 sekunde delay
+
+    def check_installation(self):
+        """Proveri instalaciju nakon odloženog vremena (asinhrono)."""
+        current_plugin = self.pending_plugin
+        retval = self.pending_retval
 
         folder_name = self.find_plugin_folder(current_plugin)
         package_installed = False
 
-        # Provera da li je paket instaliran (za opkg ili dpkg)
+        # Provera da li je paket instaliran
         if folder_name:
-            if os.system(f"opkg list-installed | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
+            plugin_folder = os.path.join(EXTENSIONS_DIR, folder_name)
+            if os.path.exists(plugin_folder):
                 package_installed = True
-            elif os.system(f"dpkg -l | grep -q enigma2-plugin-extensions-{folder_name.lower()}") == 0:
-                package_installed = True
+                logging.debug(f"✓ Plugin folder exists: {plugin_folder}")
+            else:
+                logging.debug(f"✗ Plugin folder does NOT exist: {plugin_folder}")
 
-        if retval == 0 and (folder_name or package_installed):
-            logging.debug(f"Plugin {current_plugin} successfully installed in folder {folder_name or 'unknown'}")
+        if retval == 0 and package_installed:
+            logging.debug(f"✓ Plugin {current_plugin} successfully installed")
             self.installed_plugins.add(current_plugin)
             self.current_install_index += 1
-            # Koristi timer za sledeću instalaciju
+            # Pokreni sledeću instalaciju
             self.install_timer = eTimer()
             self.install_timer.callback.append(self.install_next_plugin)
-            self.install_timer.start(1000, True)  # 1 sekunda delay
+            self.install_timer.start(2000, True)
         else:
-            logging.warning(f"Plugin {current_plugin} not found in {EXTENSIONS_DIR} or not installed, retval: {retval}")
-            self["status"].setText(f"Plugin {current_plugin} not installed properly!")
-            self.remove_plugin_from_file(current_plugin)
-            self.current_install_index += 1
-            # Koristi timer za sledeću instalaciju
-            self.install_timer = eTimer()
-            self.install_timer.callback.append(self.install_next_plugin)
-            self.install_timer.start(1000, True)  # 1 sekunda delay
+            logging.warning(f"✗ Plugin {current_plugin} not installed properly, retval: {retval}")
+            self.failed_plugins.add(current_plugin)
+            self.handle_failed_plugin(current_plugin, retval, folder_name, package_installed)
+
+    def handle_failed_plugin(self, current_plugin, retval, folder_name, package_installed):
+        """Obradi neuspeli plugin sa opcijama"""
+        # Detaljnija greška
+        error_details = []
+        if retval != 0:
+            error_details.append(f"Return code: {retval}")
+        if not folder_name:
+            error_details.append("Folder name not found")
+        if not package_installed:
+            error_details.append("Plugin folder does not exist")
+
+        error_msg = f"Plugin {current_plugin} failed to install!\n\n"
+        error_msg += "\n".join(error_details)
+        error_msg += "\n\nWhat do you want to do?"
+
+        def callback(choice):
+            if choice == "skip":
+                # Preskoči i nastavi
+                self.current_install_index += 1
+                self.install_timer = eTimer()
+                self.install_timer.callback.append(self.install_next_plugin)
+                self.install_timer.start(2000, True)
+            elif choice == "retry":
+                # Pokušaj ponovo (ne povećavaj index)
+                self.install_timer = eTimer()
+                self.install_timer.callback.append(self.install_next_plugin)
+                self.install_timer.start(2000, True)
+            elif choice == "stop":
+                # Prekini instalaciju i prikaži summary
+                self.show_installation_summary()
+
+        choices = [
+            ("Skip this plugin and continue", "skip"),
+            ("Retry installation", "retry"),
+            ("Stop installation", "stop")
+        ]
+
+        self.session.openWithCallback(
+            callback,
+            ChoiceBox,
+            title=f"Plugin {current_plugin} failed to install!",
+            list=choices
+        )
 
     def clear_selections(self):
         """Clear selections and reset display."""
@@ -959,7 +1147,7 @@ class CiefpsettingsPanel(Screen):
         self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
         self["menu"].setList(self.plugin_display_list)
         self.update_status()
-
+        
     def create_temp_install_script(self, plugin, is_last):
         """Kreira privremenu skriptu za instalaciju sa SKIP_REBOOT varijablom."""
         script_path = f"/tmp/install_{plugin.replace(' ', '_').replace('/', '_')}.sh"
@@ -970,6 +1158,10 @@ class CiefpsettingsPanel(Screen):
         script_content = f'''#!/bin/sh
 # Instalacija {plugin}
 # Batch installation mode
+
+echo "=== Starting installation of {plugin} ==="
+date
+
 if [ "{str(is_last).lower()}" = "true" ]; then
     export SKIP_REBOOT=0
     echo "Last plugin in queue - restart will be performed after installation"
@@ -979,10 +1171,33 @@ else
 fi
 
 # Pokreni originalnu instalaciju
+echo "Running: {original_command}"
 {original_command}
+
+# Sačekaj da se svi podprocesi završe
+wait
+
+# Sinhronizuj fajl sistem
+sync
+
+# Dodaj mali delay da se fajlovi oslobode
+sleep 6
+
+# Proveri da li je instalacija uspela
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "Installation of {plugin} completed successfully (exit code: $EXIT_CODE)"
+else
+    echo "ERROR: Installation of {plugin} failed with exit code $EXIT_CODE"
+fi
 
 # Očisti ovu skriptu nakon izvršenja
 rm -f "$0"
+
+echo "=== END OF INSTALLATION FOR {plugin} ==="
+date
+
+exit $EXIT_CODE
 '''
         
         with open(script_path, 'w') as f:
@@ -990,7 +1205,7 @@ rm -f "$0"
         
         os.chmod(script_path, 0o755)
         return script_path
-
+        
     def final_restart(self, answer):
         """Konačni restart nakon svih instalacija."""
         if answer:
