@@ -22,7 +22,7 @@ import subprocess
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "6.0"
+PLUGIN_VERSION = "6.1"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -78,6 +78,7 @@ PLUGINS = {
     "CiefpRottenTomatoes": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpRottenTomatoes/main/installer.sh -O - | /bin/sh",
     "CiefpOpenSubtitles": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpOpenSubtitles/main/installer.sh -O - | /bin/sh",
     "CiefpSRTplayer": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSRTplayer/main/installer.sh -O - | /bin/sh",
+    "CiefpEasySetup": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpEasySetup/main/installer.sh -O - | /bin/sh",
     "TitloviBrowser": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/TitloviBrowser/main/installer.sh -O - | /bin/sh",
     "WebCamE2PrenjSF": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/WebCamE2PrenjSF/main/installer.sh -O - | /bin/sh",
     "############ ( Panels ) ############": "", 
