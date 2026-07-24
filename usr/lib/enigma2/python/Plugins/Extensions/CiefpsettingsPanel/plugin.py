@@ -1,7 +1,7 @@
 from Plugins.Plugin import PluginDescriptor
 from Screens.Screen import Screen
 from Screens.MessageBox import MessageBox
-from Screens.ChoiceBox import ChoiceBox  # DODAJ OVO
+from Screens.ChoiceBox import ChoiceBox
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
@@ -24,7 +24,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "6.5"
+PLUGIN_VERSION = "6.6"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -101,6 +101,7 @@ PLUGINS = {
     "SatVenusPanel": "wget https://dreambox4u.com/emilnabil237/plugins/satvenuspanel/installer.sh -O - | /bin/sh",
     "Tspanel": "wget https://dreambox4u.com/emilnabil237/plugins/tspanel/installer.sh -O - | /bin/sh",
     "############ ( IPTV Plugins ) ############": "",
+    "XtreamNew": "wget -q --no-check-certificate https://raw.githubusercontent.com/ahmedhussein4342-lgtm/XtreamNew/main/install_xtreamnew.sh -O - | /bin/sh",
     "Estalker": "wget https://github.com/emilnabil/download-plugins/raw/refs/heads/main/EStalker/EStalker.sh -O - | /bin/sh",
     "EstalkerWebControl": "wget https://github.com/emilnabil/download-plugins/raw/refs/heads/main/EstalkerWebControl/estalkerwebcontrol.sh -O - | /bin/sh",
     "X-Streamity": "wget https://raw.githubusercontent.com/biko-73/xstreamity/main/installer.sh -qO - | /bin/sh",
@@ -166,6 +167,7 @@ PLUGINS = {
     "apod": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/apod/main/installer.sh -O - | /bin/sh",
     "WorldCam": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/WorldCam/main/installer.sh -O - | /bin/sh",
     "levi45-settings": "wget https://dreambox4u.com/emilnabil237/plugins/levi45-settings/levi45-settings.sh -O - | /bin/sh",
+    "LastScanned Analyzer": "wget -qO- https://raw.githubusercontent.com/andrejicd/Last-Scanned-Analyzer/refs/heads/main/installer.sh | sh",
     "############ ( Softcams ) ############": "", 
     "levi45-freeserver": "wget https://raw.githubusercontent.com/emil237/plugins/refs/heads/main/levi45-freeserver/levi45-freeserver.sh -O - | /bin/sh",
     "Ncam": "wget https://dreambox4u.com/emilnabil237/emu/installer-ncam.sh -O - | /bin/sh",
@@ -198,6 +200,8 @@ PLUGINS = {
     "Wget": "opkg install wget",
     "Curl": "opkg install curl",
     "lxml": "opkg install python3-lxml",
+    "yt-dlp": "opkg install yt-dlp",
+    "ffmpeg": "opkg install ffmpeg",
     "gstplayer": "opkg install gstplayer",
     "Streamlinksrv": "opkg install streamlinksrv",
     "dabstreamer": "opkg install dabstreamer",
@@ -216,13 +220,21 @@ PLUGINS = {
 
 class CiefpPluginManager(Screen):
     skin = """
-    <screen name="CiefpPluginManager" position="center,center" size="1200,800" title="..:: Ciefp Plugin Manager ::..">
-        <widget name="menu" position="10,10" size="700,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
-        <widget name="background" position="700,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
-        <widget name="status" position="10,720" size="700,30" transparent="1" font="Regular;22" halign="center" />
-        <widget name="key_red" position="10,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="key_green" position="240,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="key_blue" position="470,760" size="220,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="CiefpPluginManager" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <widget name="separator0" position="0,10" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />  
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />   
+        <widget name="menu" position="20,100" size="1350,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
+        <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="status" position="20,950" size="1100,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
+        <widget name="separator3" position="0,990" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="key_red" position="20,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_green" position="640,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_blue" position="1260,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -230,6 +242,7 @@ class CiefpPluginManager(Screen):
         self.session = session
         Screen.__init__(self, session)
 
+        self["channel_title"] = Label("..:: Ciefp Plugin Manager ::..")
         self.installed_plugins = self.load_installed_plugins()
         self["menu"] = MenuList(self.installed_plugins)
         self["background"] = Pixmap()
@@ -237,6 +250,12 @@ class CiefpPluginManager(Screen):
         self["key_red"] = Button("Delete")
         self["key_green"] = Button("Select")
         self["key_blue"] = Button("Restart Enigma2")
+
+        # Separatori
+        self["separator0"] = Label()
+        self["separator1"] = Label()
+        self["separator2"] = Label()
+        self["separator3"] = Label()
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -392,7 +411,7 @@ class CiefpPluginManager(Screen):
             logging.debug(f"Successfully deleted plugin: {plugin}")
             self["status"].setText(f"{plugin} deleted successfully!")
             del self.installed_plugins[current_index]
-            self.installed_plugins = self.load_installed_plugins()  # Osveži listu
+            self.installed_plugins = self.load_installed_plugins()
             self["menu"].setList(self.installed_plugins)
             self.session.open(MessageBox, f"The plugin {plugin} has been deleted. Please restart Enigma manually.",
                               MessageBox.TYPE_INFO, timeout=10)
@@ -407,21 +426,21 @@ class CiefpPluginManager(Screen):
 
 class IPKInstaller(Screen):
     skin = """
-    <screen name="IPKInstaller" position="center,center" size="1600,800" title="..:: IPK, TAR.GZ and SH Installer ::..">
-        <!-- Left part for the IPK, TAR.GZ and SH file list -->
-        <widget name="menu" position="10,10" size="1080,650" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
-        <!-- Right part for background image -->
-        <widget name="background" position="1100,0" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
-        <!-- Status at the bottom left -->
-        <widget name="status" position="10,720" size="1080,30" transparent="1" font="Regular;22" halign="center" />
-        <!-- Red button for Exit -->
-        <widget name="key_red" position="10,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <!-- Green button for Install Selected -->
-        <widget name="key_green" position="270,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <!-- Yellow button (reserved for future use or removed) -->
-        <widget name="key_yellow" position="530,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <!-- Blue button for Restart Enigma2 -->
-        <widget name="key_blue" position="790,760" size="250,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="CiefpPluginManager" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <widget name="separator0" position="0,10" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />  
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />   
+        <widget name="menu" position="20,100" size="1350,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
+        <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="status" position="20,950" size="1100,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
+        <widget name="separator3" position="0,990" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="key_red" position="20,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_green" position="640,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_blue" position="1260,1000" size="600,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -429,24 +448,31 @@ class IPKInstaller(Screen):
         self.session = session
         Screen.__init__(self, session)
 
-        self.selected_files = set()  # Skup za praćenje selektovanih fajlova
-        self.file_display_list = []  # Lista za prikaz sa [ ] ili [X]
-        self.files = []  # Lista originalnih imena fajlova
+        self["channel_title"] = Label("..:: IPK, TAR.GZ and SH Installer ::..")
+        self.selected_files = set()
+        self.file_display_list = []
+        self.files = []
         self.load_files()
         self["menu"] = MenuList(self.file_display_list)
         self["background"] = Pixmap()
         self["status"] = Label("Select files with OK, install with Green")
         self["key_red"] = Button("Exit")
         self["key_green"] = Button("Install Selected")
-        self["key_yellow"] = Button("Yellow: --")  # Može se ukloniti ili iskoristiti
+        self["key_yellow"] = Button("Yellow: --")
         self["key_blue"] = Button("Restart Enigma2")
+
+        # Separatori
+        self["separator0"] = Label()
+        self["separator1"] = Label()
+        self["separator2"] = Label()
+        self["separator3"] = Label()
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
             {
                 "red": self.close,
                 "green": self.start_installation,
-                "yellow": self.no_action,  # Placeholder za buduću funkcionalnost
+                "yellow": self.no_action,
                 "blue": self.restart_enigma2,
                 "ok": self.toggle_selection,
                 "cancel": self.close,
@@ -457,7 +483,7 @@ class IPKInstaller(Screen):
         self.container.appClosed.append(self.install_finished)
         self.current_install_index = 0
         self.files_to_install = []
-        self.current_package_name = None  # Inicijalizacija atributa
+        self.current_package_name = None
         self.update_status()
 
     def no_action(self):
@@ -556,7 +582,6 @@ class IPKInstaller(Screen):
         elif current_file.endswith(".tar.gz"):
             self.install_tar_gz_file(file_path, current_file)
         elif current_file.endswith(".sh"):
-            # Postavi fajl kao izvršiv i pokreni ga
             os.chmod(file_path, 0o755)
             install_command = f"bash {file_path}"
             self.container.execute(install_command)
@@ -713,7 +738,6 @@ class IPKInstaller(Screen):
             self.current_install_index += 1
             self.install_next_file()
         elif current_file.endswith(".tar.gz"):
-            # TAR.GZ instalacija je već obrađena u install_tar_gz_file
             pass
         elif current_file.endswith(".sh"):
             if retval == 0:
@@ -726,49 +750,50 @@ class IPKInstaller(Screen):
             self.current_install_index += 1
             self.install_next_file()
 
-        self.load_files()  # Osveži listu fajlova
+        self.load_files()
         self["menu"].setList(self.file_display_list)
 
     def restart_enigma2(self):
         """Restart Enigma2."""
         self.container.execute("init 4 && init 3")
         self.close()
+
 class CiefpsettingsPanel(Screen):
     skin = """
-    <screen name="CiefpsettingsPanel" position="center,center" size="1600,900" title="..:: Ciefpsettings Panel ::.. (Version{version})">
-        <!-- Left part for the menu -->
-        <widget name="menu" position="10,10" size="790,700" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26" />
-
-        <!-- Right part for background image -->
-        <widget name="background" position="800,0" size="800,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
-
-        <!-- Status at the bottom left -->
-        <widget name="status" position="10,740" size="790,30" transparent="1" font="Regular;22" halign="center" />
-
-        <!-- Progress bar - cela dužina iznad dugmića -->
-        <widget name="progress_bar" position="10,790" size="1580,20" backgroundColor="#333333" foregroundColor="#1F771F" borderWidth="1" />
-        <widget name="progress_text" position="10,815" size="1580,25" font="Regular;20" halign="center" />
-
-        <!-- Buttons -->
-        <widget name="key_red" position="10,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="key_green" position="410,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="key_yellow" position="810,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="key_blue" position="1210,850" size="390,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="CiefpsettingsPanel" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <widget name="separator0" position="0,10" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />  
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />    
+        <widget name="menu" position="20,100" size="950,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="background" position="1000,100" size="900,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+        <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="status" position="20,910" size="900,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
+        <widget name="progress_text" position="950,910" size="900,40" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
+        <widget name="progress_bar" position="20,950" size="1880,30" backgroundColor="#333333" foregroundColor="#1F771F" borderWidth="1" />
+        <widget name="separator3" position="0,990" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
+        <widget name="key_red" position="20,1000" size="460,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="key_green" position="490,1000" size="460,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="key_yellow" position="960,1000" size="460,50" font="Bold;24" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="key_blue" position="1430,1000" size="460,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
-    """.format(version=PLUGIN_VERSION)
+    """
     
     def __init__(self, session):
         self.session = session
         Screen.__init__(self, session)
 
+        self["channel_title"] = Label(f"..:: Ciefpsettings Panel ::.. (Version {PLUGIN_VERSION})")
         self.selected_plugins = set()
         self.plugin_display_list = [f"[ ] {plugin}" for plugin in PLUGINS.keys()]
         self.current_install_index = 0
-        self.installed_plugins = set()  # Lista uspešno instaliranih
-        self.failed_plugins = set()  # DODAJ - Lista neuspelih plugina
-        self.start_time = None  # DODAJ - Vreme početka instalacije
-        self.pending_plugin = None      # DODAJ OVO
-        self.pending_retval = None      # DODAJ OVO
+        self.installed_plugins = set()
+        self.failed_plugins = set()
+        self.start_time = None
+        self.pending_plugin = None
+        self.pending_retval = None
         self.version_check_in_progress = False
         self.version_buffer = b''
 
@@ -780,9 +805,14 @@ class CiefpsettingsPanel(Screen):
         self["key_blue"] = Button("Restart Enigma2")
         self["key_yellow"] = Button("IPK/TAR.GZ/SH Installer")
 
-        # DODAJ - Progress bar widgeti
         self["progress_bar"] = ProgressBar()
         self["progress_text"] = Label("")
+
+        # Separatori
+        self["separator0"] = Label()
+        self["separator1"] = Label()
+        self["separator2"] = Label()
+        self["separator3"] = Label()
 
         self["actions"] = ActionMap(
             ["ColorActions", "SetupActions"],
@@ -813,12 +843,10 @@ class CiefpsettingsPanel(Screen):
         if current_plugin in self.selected_plugins:
             self.selected_plugins.remove(current_plugin)
             self.plugin_display_list[current_index] = f"[ ] {current_plugin}"
-            # Ukloni plugin iz txt fajla ako je deselektovan
             self.remove_plugin_from_file(current_plugin)
         else:
             self.selected_plugins.add(current_plugin)
             self.plugin_display_list[current_index] = f"[X] {current_plugin}"
-            # Upis plugin u txt fajl odmah nakon selekcije
             self.log_selected_plugin(current_plugin)
 
         self["menu"].setList(self.plugin_display_list)
@@ -838,20 +866,17 @@ class CiefpsettingsPanel(Screen):
         """Log a single selected plugin to the file, avoiding duplicates."""
         try:
             logging.debug(f"Logging selected plugin: {plugin}")
-            # Proveri da li direktorijum postoji, ako ne, kreiraj ga
             plugin_dir = os.path.dirname(INSTALLED_PLUGINS_FILE)
             if not os.path.exists(plugin_dir):
                 os.makedirs(plugin_dir)
                 logging.debug(f"Created directory: {plugin_dir}")
 
-            # Učitaj postojeće plugine iz fajla
             existing_plugins = set()
             if os.path.exists(INSTALLED_PLUGINS_FILE):
                 with open(INSTALLED_PLUGINS_FILE, "r") as f:
                     existing_plugins = {line.strip() for line in f if line.strip()}
                 logging.debug(f"Existing plugins in file: {existing_plugins}")
 
-            # Ako plugin već postoji, preskoči
             if plugin not in existing_plugins:
                 with open(INSTALLED_PLUGINS_FILE, "a") as f:
                     f.write(f"{plugin}\n")
@@ -883,9 +908,8 @@ class CiefpsettingsPanel(Screen):
         if not os.path.exists(EXTENSIONS_DIR):
             return None
 
-        # Eksplicitna mapa naziva plugina i foldera
         PLUGIN_FOLDER_MAP = {
-            "Levi45 Addons Manager": "Levi45Addons",  # Potvrđen tačan naziv foldera
+            "Levi45 Addons Manager": "Levi45Addons",
             "TV Addon": "tvaddon",
             "SubsSupport 1.7.0-r18 Mnasr": "SubsSupport",
         }
@@ -894,7 +918,6 @@ class CiefpsettingsPanel(Screen):
             if os.path.exists(os.path.join(EXTENSIONS_DIR, folder)):
                 return folder
 
-        # Normalizacija naziva plugina
         normalized_name = re.sub(r'[\s\-\_]', '', plugin_name.lower())
         normalized_name = re.sub(r'\d+\.\d+\.\d+.*|r\d+', '', normalized_name)
         for folder in os.listdir(EXTENSIONS_DIR):
@@ -909,15 +932,13 @@ class CiefpsettingsPanel(Screen):
             self["status"].setText("No plugins selected!")
             return
 
-        # DODAJ - Zabeleži vreme početka
         self.start_time = time.time()
 
         self.plugins_to_install = list(self.selected_plugins)
         self.current_install_index = 0
         self.installed_plugins.clear()
-        self.failed_plugins.clear()  # DODAJ - Resetuj listu neuspelih
+        self.failed_plugins.clear()
 
-        # DODAJ - Prikaži progress bar
         self["progress_bar"].setValue(0)
         self["progress_text"].setText(f"0/{len(self.plugins_to_install)} (0%)")
 
@@ -936,7 +957,6 @@ class CiefpsettingsPanel(Screen):
         """Install the next plugin in the queue."""
         logging.debug(f"Installing plugin {self.current_install_index + 1}/{len(self.plugins_to_install)}")
 
-        # Ažuriraj progress bar
         self.update_progress()
 
         if self.current_install_index >= len(self.plugins_to_install):
@@ -945,10 +965,8 @@ class CiefpsettingsPanel(Screen):
             self.show_installation_summary()
             return
 
-        # Proveri da li je prethodni container još aktivan
         if hasattr(self, 'container') and self.container:
             try:
-                # Pokušaj da se oslobodi stari container
                 self.container = None
             except:
                 pass
@@ -960,10 +978,8 @@ class CiefpsettingsPanel(Screen):
             f"Installing {plugin} ({self.current_install_index + 1}/{len(self.plugins_to_install)})...")
         logging.debug(f"Executing command for plugin: {plugin}")
 
-        # Kreiraj wrapper skriptu za instalaciju
         install_script = self.create_temp_install_script(plugin, is_last)
 
-        # Proveri da li skripta postoji
         if not os.path.exists(install_script):
             logging.error(f"Install script not created: {install_script}")
             self["status"].setText(f"Error: Could not create install script for {plugin}")
@@ -973,24 +989,20 @@ class CiefpsettingsPanel(Screen):
             self.install_timer.start(3000, True)
             return
 
-        # Kreiraj novi container za svaku instalaciju
         self.container = eConsoleAppContainer()
         self.container.appClosed.append(self.command_finished)
 
-        # Pokreni instalaciju
         logging.debug(f"Executing: bash {install_script}")
         self.container.execute(f"bash {install_script}")
 
     def show_installation_summary(self):
         """Prikaži summary instalacije sa vremenom trajanja"""
-        # Izračunaj vreme trajanja
         elapsed = 0
         if self.start_time:
             elapsed = int(time.time() - self.start_time)
         minutes = elapsed // 60
         seconds = elapsed % 60
 
-        # Kreiraj summary poruku
         summary = f"Installation completed in {minutes}:{seconds:02d}!\n\n"
         summary += f"✓ Successfully installed: {len(self.installed_plugins)}/{len(self.plugins_to_install)}\n"
 
@@ -1002,17 +1014,14 @@ class CiefpsettingsPanel(Screen):
 
         if self.installed_plugins:
             summary += f"\n✓ Installed plugins ({len(self.installed_plugins)}):\n"
-            # Prikaži samo prvih 10 ako ima puno
             plugins_list = list(self.installed_plugins)[:10]
             for plugin in plugins_list:
                 summary += f"  • {plugin}\n"
             if len(self.installed_plugins) > 10:
                 summary += f"  ... and {len(self.installed_plugins) - 10} more\n"
 
-        # Sačuvaj summary u log fajl
         self.log_installation_summary()
 
-        # Prikaži summary korisniku
         if self.installed_plugins:
             self.session.openWithCallback(
                 self.final_restart,
@@ -1061,17 +1070,12 @@ class CiefpsettingsPanel(Screen):
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         logging.debug(f"[{current_time}] Installation finished for plugin {current_plugin}, return value: {retval}")
 
-        # NE KORISTI time.sleep() - to blokira Enigma2!
-        # Umesto toga, koristi eTimer za asinhrono čekanje
-
-        # Sačuvaj podatke za kasniju proveru
         self.pending_plugin = current_plugin
         self.pending_retval = retval
 
-        # Pokreni timer za proveru instalacije (3 sekunde delay)
         self.check_timer = eTimer()
         self.check_timer.callback.append(self.check_installation)
-        self.check_timer.start(3000, True)  # 3 sekunde delay
+        self.check_timer.start(3000, True)
 
     def check_installation(self):
         """Proveri instalaciju nakon odloženog vremena (asinhrono)."""
@@ -1081,7 +1085,6 @@ class CiefpsettingsPanel(Screen):
         folder_name = self.find_plugin_folder(current_plugin)
         package_installed = False
 
-        # Provera da li je paket instaliran
         if folder_name:
             plugin_folder = os.path.join(EXTENSIONS_DIR, folder_name)
             if os.path.exists(plugin_folder):
@@ -1094,7 +1097,6 @@ class CiefpsettingsPanel(Screen):
             logging.debug(f"✓ Plugin {current_plugin} successfully installed")
             self.installed_plugins.add(current_plugin)
             self.current_install_index += 1
-            # Pokreni sledeću instalaciju
             self.install_timer = eTimer()
             self.install_timer.callback.append(self.install_next_plugin)
             self.install_timer.start(2000, True)
@@ -1105,7 +1107,6 @@ class CiefpsettingsPanel(Screen):
 
     def handle_failed_plugin(self, current_plugin, retval, folder_name, package_installed):
         """Obradi neuspeli plugin sa opcijama"""
-        # Detaljnija greška
         error_details = []
         if retval != 0:
             error_details.append(f"Return code: {retval}")
@@ -1120,18 +1121,15 @@ class CiefpsettingsPanel(Screen):
 
         def callback(choice):
             if choice == "skip":
-                # Preskoči i nastavi
                 self.current_install_index += 1
                 self.install_timer = eTimer()
                 self.install_timer.callback.append(self.install_next_plugin)
                 self.install_timer.start(2000, True)
             elif choice == "retry":
-                # Pokušaj ponovo (ne povećavaj index)
                 self.install_timer = eTimer()
                 self.install_timer.callback.append(self.install_next_plugin)
                 self.install_timer.start(2000, True)
             elif choice == "stop":
-                # Prekini instalaciju i prikaži summary
                 self.show_installation_summary()
 
         choices = [
@@ -1158,7 +1156,6 @@ class CiefpsettingsPanel(Screen):
         """Kreira privremenu skriptu za instalaciju sa SKIP_REBOOT varijablom."""
         script_path = f"/tmp/install_{plugin.replace(' ', '_').replace('/', '_')}.sh"
         
-        # Dobij originalnu komandu
         original_command = PLUGINS[plugin]
         
         script_content = f'''#!/bin/sh
@@ -1176,20 +1173,13 @@ else
     echo "Skipping restart for {plugin} (batch installation)"
 fi
 
-# Pokreni originalnu instalaciju
 echo "Running: {original_command}"
 {original_command}
 
-# Sačekaj da se svi podprocesi završe
 wait
-
-# Sinhronizuj fajl sistem
 sync
-
-# Dodaj mali delay da se fajlovi oslobode
 sleep 6
 
-# Proveri da li je instalacija uspela
 EXIT_CODE=$?
 if [ $EXIT_CODE -eq 0 ]; then
     echo "Installation of {plugin} completed successfully (exit code: $EXIT_CODE)"
@@ -1197,7 +1187,6 @@ else
     echo "ERROR: Installation of {plugin} failed with exit code $EXIT_CODE"
 fi
 
-# Očisti ovu skriptu nakon izvršenja
 rm -f "$0"
 
 echo "=== END OF INSTALLATION FOR {plugin} ==="
@@ -1218,6 +1207,7 @@ exit $EXIT_CODE
             self["status"].setText("Restarting Enigma2...")
             self.container.execute("init 4 && init 3")
             self.close()
+
     def open_plugin_manager(self):
         """Open the Plugin Manager screen."""
         self.session.open(CiefpPluginManager)
@@ -1281,7 +1271,6 @@ exit $EXIT_CODE
         if answer:
             try:
                 self["status"].setText("Backing up installed plugins list...")
-                # Provera da li fajl postoji i pravljenje backup-a
                 if os.path.exists(INSTALLED_PLUGINS_FILE):
                     shutil.copy2(INSTALLED_PLUGINS_FILE, BACKUP_PLUGINS_FILE)
                     logging.debug(f"Backed up {INSTALLED_PLUGINS_FILE} to {BACKUP_PLUGINS_FILE}")
@@ -1299,9 +1288,7 @@ exit $EXIT_CODE
     def update_completed(self, retval):
         """Obrada završetka ažuriranja."""
         try:
-            # Pokušaj vraćanja backup fajla
             if os.path.exists(BACKUP_PLUGINS_FILE):
-                # Proveri da li direktorijum postoji, ako ne, kreiraj ga
                 plugin_dir = os.path.dirname(INSTALLED_PLUGINS_FILE)
                 if not os.path.exists(plugin_dir):
                     os.makedirs(plugin_dir)
