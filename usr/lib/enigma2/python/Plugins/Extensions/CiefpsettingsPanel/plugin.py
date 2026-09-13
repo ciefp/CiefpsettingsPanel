@@ -24,7 +24,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "6.9"
+PLUGIN_VERSION = "7.0"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -87,6 +87,7 @@ PLUGINS = {
     "CiefpE2editor": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/Ciefpe2editor/main/installer.sh -O - | /bin/sh",
     "CiefpBootlogo": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpBootlogo/main/installer.sh -O - | /bin/sh",
     "CiefpPiconManager": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpPiconManager/main/installer.sh -O - | /bin/sh",
+    "CiefpSignalInfo": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSignalInfo/main/installer.sh -O - | /bin/sh",
     "TitloviBrowser": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/TitloviBrowser/main/installer.sh -O - | /bin/sh",
     "WebCamE2PrenjSF": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/WebCamE2PrenjSF/main/installer.sh -O - | /bin/sh",
     "############ ( KiddaC Plugins ) ############": "",
@@ -117,6 +118,7 @@ PLUGINS = {
     "Multistalker Pro": "wget -q --no-check-certificate https://dreambox4u.com/emilnabil237/plugins/MultiStalkerPro/installer.sh -O - | /bin/sh",
     "Multistalker Pro 1.2 ATV": "wget https://raw.githubusercontent.com/Ham-ahmed/2125/refs/heads/main/multi-stalkerpro_Atv-py3.-12-8.sh -O - | /bin/sh", 
     "XCplugin": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/XC-Code/installer.sh -qO - | /bin/sh",
+    "XPortal": "wget -q "--no-check-certificate" https://raw.githubusercontent.com/azroukarim/XPortal/refs/heads/main/install_xportal.sh -O - | /bin/sh",
     "############ ( IPTV Plugins ) ############": "",
     "Archimede-M3UConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/Archimede-M3UConverter/main/installer.sh -O - | /bin/sh",  
     "StalkerPortalConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/StalkerPortalConverter/main/installer.sh -O - | /bin/sh",
@@ -135,6 +137,7 @@ PLUGINS = {
     "############ ( Subtitles Plugins ) ############": "", 
     "SubsSupport 1.8.0 MNASR": "wget -q --no-check-certificate https://github.com/popking159/ssupport/raw/main/subssupport-install.sh -O - | /bin/sh",
     "SubsSupport": "wget https://raw.githubusercontent.com/biko-73/SubsSupport/main/installer.sh -qO - | /bin/sh",
+    "SubsSupportPro": "wget -q "--no-check-certificate" https://github.com/popking159/SubsSupportPro/raw/main/subssupportpro-install.sh -O - | /bin/sh",
     "A.I. Powered Translation 2.0": "wget https://github.com/milanello13/aisubtitles/releases/download/v2.0/enigma2-plugin-extensions-aisubtitles_v2.0_all.ipk",
     "aisubtitles": "wget https://raw.githubusercontent.com/milanello13/aisubtitles/main/installer.sh -O - | /bin/sh",
     "AISubtitles": "wget https://github.com/emilnabil/download-plugins/raw/refs/heads/main/AISubtitles/AISubtitles.sh -O - | /bin/sh",
