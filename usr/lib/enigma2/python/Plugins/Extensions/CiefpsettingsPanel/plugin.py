@@ -137,7 +137,7 @@ PLUGINS = {
     "############ ( Subtitles Plugins ) ############": "", 
     "SubsSupport 1.8.0 MNASR": "wget -q --no-check-certificate https://github.com/popking159/ssupport/raw/main/subssupport-install.sh -O - | /bin/sh",
     "SubsSupport": "wget https://raw.githubusercontent.com/biko-73/SubsSupport/main/installer.sh -qO - | /bin/sh",
-    "SubsSupportPro": "wget -q "--no-check-certificate" https://github.com/popking159/SubsSupportPro/raw/main/subssupportpro-install.sh -O - | /bin/sh",
+    "SubsSupportPro": "wget -q --no-check-certificate https://github.com/popking159/SubsSupportPro/raw/main/subssupportpro-install.sh -O - | /bin/sh",
     "A.I. Powered Translation 2.0": "wget https://github.com/milanello13/aisubtitles/releases/download/v2.0/enigma2-plugin-extensions-aisubtitles_v2.0_all.ipk",
     "aisubtitles": "wget https://raw.githubusercontent.com/milanello13/aisubtitles/main/installer.sh -O - | /bin/sh",
     "AISubtitles": "wget https://github.com/emilnabil/download-plugins/raw/refs/heads/main/AISubtitles/AISubtitles.sh -O - | /bin/sh",
