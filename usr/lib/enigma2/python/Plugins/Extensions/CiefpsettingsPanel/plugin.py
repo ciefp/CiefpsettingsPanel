@@ -118,7 +118,7 @@ PLUGINS = {
     "Multistalker Pro": "wget -q --no-check-certificate https://dreambox4u.com/emilnabil237/plugins/MultiStalkerPro/installer.sh -O - | /bin/sh",
     "Multistalker Pro 1.2 ATV": "wget https://raw.githubusercontent.com/Ham-ahmed/2125/refs/heads/main/multi-stalkerpro_Atv-py3.-12-8.sh -O - | /bin/sh", 
     "XCplugin": "wget https://raw.githubusercontent.com/MOHAMED19OS/Download/main/XC-Code/installer.sh -qO - | /bin/sh",
-    "XPortal": "wget -q "--no-check-certificate" https://raw.githubusercontent.com/azroukarim/XPortal/refs/heads/main/install_xportal.sh -O - | /bin/sh",
+    "XPortal": "wget -q --no-check-certificate https://raw.githubusercontent.com/azroukarim/XPortal/refs/heads/main/install_xportal.sh -O - | /bin/sh",
     "############ ( IPTV Plugins ) ############": "",
     "Archimede-M3UConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/Archimede-M3UConverter/main/installer.sh -O - | /bin/sh",  
     "StalkerPortalConverter": "wget -q --no-check-certificate https://raw.githubusercontent.com/Belfagor2005/StalkerPortalConverter/main/installer.sh -O - | /bin/sh",
