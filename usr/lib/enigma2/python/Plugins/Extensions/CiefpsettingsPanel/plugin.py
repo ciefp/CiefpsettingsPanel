@@ -24,7 +24,7 @@ import tarfile
 logging.basicConfig(filename="/tmp/ciefp_install.log", level=logging.DEBUG, format="%(asctime)s - %(message)s")
 
 # Verzija plugina
-PLUGIN_VERSION = "7.0"
+PLUGIN_VERSION = "7.1"
 
 # URL za proveru verzije
 VERSION_URL = "https://raw.githubusercontent.com/ciefp/CiefpsettingsPanel/refs/heads/main/version.txt"
@@ -88,6 +88,7 @@ PLUGINS = {
     "CiefpBootlogo": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpBootlogo/main/installer.sh -O - | /bin/sh",
     "CiefpPiconManager": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpPiconManager/main/installer.sh -O - | /bin/sh",
     "CiefpSignalInfo": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpSignalInfo/main/installer.sh -O - | /bin/sh",
+    "CiefpEPGinfo": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/CiefpEPGinfo/main/installer.sh -O - | /bin/sh",
     "TitloviBrowser": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/TitloviBrowser/main/installer.sh -O - | /bin/sh",
     "WebCamE2PrenjSF": "wget -q --no-check-certificate https://raw.githubusercontent.com/ciefp/WebCamE2PrenjSF/main/installer.sh -O - | /bin/sh",
     "############ ( KiddaC Plugins ) ############": "",
@@ -168,6 +169,7 @@ PLUGINS = {
     "Cccam": "wget https://dreambox4u.com/emilnabil237/emu/installer-cccam.sh  -O - | /bin/sh",
     "FreeServerCCcam": "wget https://ia803104.us.archive.org/0/items/freecccamserver/installer.sh -qO - | /bin/sh",
     "Stalker portal free": "wget -O /home/stalker.conf https://raw.githubusercontent.com/karimSATPRO/Portal-100mag/main/stalker.conf",
+    "Reader Manager": "wget -qO- https://raw.githubusercontent.com/ismail9875/ReaderManager/main/installer.sh | /bin/sh",
     "############ ( Plugins ) ############": "", 
     "ONEupdater": "wget https://raw.githubusercontent.com/Sat-Club/ONEupdaterE2/main/installer.sh -O - | /bin/sh",
     "RaedQuickSignal": "wget https://raw.githubusercontent.com/fairbird/RaedQuickSignal/main/installer.sh -O - | /bin/sh",
@@ -245,7 +247,7 @@ class CiefpPluginManager(Screen):
             transparent="0" zPosition="2" />
         <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />   
         <widget name="menu" position="20,100" size="1350,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
-        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background2.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/pluginmanager.png" zPosition="-1" alphatest="on" />
         <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
         <widget name="status" position="20,950" size="1100,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
         <widget name="separator3" position="0,990" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
@@ -451,7 +453,7 @@ class IPKInstaller(Screen):
             transparent="0" zPosition="2" />
         <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />   
         <widget name="menu" position="20,100" size="1350,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
-        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background3.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="1400,100" size="500,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/ipkinstaler.png" zPosition="-1" alphatest="on" />
         <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
         <widget name="status" position="20,950" size="1100,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
         <widget name="separator3" position="0,990" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
@@ -785,7 +787,7 @@ class CiefpsettingsPanel(Screen):
             transparent="0" zPosition="2" />
         <widget name="separator1" position="0,90" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />    
         <widget name="menu" position="20,100" size="950,800" scrollbarMode="showOnDemand" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
-        <widget name="background" position="1000,100" size="900,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/background.png" zPosition="-1" alphatest="on" />
+        <widget name="background" position="1000,100" size="900,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpsettingsPanel/settingspanel.png" zPosition="-1" alphatest="on" />
         <widget name="separator2" position="0,900" size="1920,3" backgroundColor="#d5fa02" zPosition="1" />
         <widget name="status" position="20,910" size="900,40" transparent="1" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
         <widget name="progress_text" position="950,910" size="900,40" font="Regular;24" halign="center" foregroundColor="#03ff0b" backgroundColor="#011a2e"/>
